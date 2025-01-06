@@ -8,9 +8,18 @@ crate-type = ["cdylib"]
 
 [dependencies]
 anyhow = "1.0"
-everscale-types = { version = "0.1.2", default-features = false, features = ["sync", "base64"] }
-everscale-vm = { git = "https://github.com/broxus/everscale-vm.git", rev = "423a444bc0af5afea7dee45a05fd0fca6c02700e" }
 libc = { version = "0.2", optional = true }
+log = "0.4"
+num-bigint = "0.4"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = { version = "1.0" }
+
+everscale-types = { version = "0.1.2", default-features = false, features = [
+    "sync",
+    "serde",
+    "base64",
+] }
+everscale-vm = { git = "https://github.com/broxus/everscale-vm.git", rev = "100d1a5e5c87" }
 
 [build-dependencies]
 anyhow = "1.0"
