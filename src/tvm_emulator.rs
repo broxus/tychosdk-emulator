@@ -8,11 +8,11 @@ use everscale_types::models::{
 };
 use everscale_types::num::Tokens;
 use everscale_types::prelude::*;
-use everscale_vm::{
-    BehaviourModifiers, CustomSmcInfo, GasParams, SmcInfo, SmcInfoBase, SmcInfoTonV6, Stack, Tuple,
-    VmState, VmVersion,
-};
 use num_bigint::BigInt;
+use tycho_vm::{
+    tuple, BehaviourModifiers, CustomSmcInfo, GasParams, SafeRc, SmcInfo, SmcInfoBase,
+    SmcInfoTonV6, Stack, Tuple, VmState, VmVersion,
+};
 
 pub struct TvmEmulator {
     pub code: Cell,
@@ -53,6 +53,7 @@ impl TvmEmulator {
                 max: 1000000,
                 limit,
                 credit,
+                price: 1000 << 16,
             });
         }
 
@@ -66,26 +67,29 @@ impl TvmEmulator {
 
     pub fn run_get_method(&self, method_id: i32, mut stack: Stack) -> Answer {
         // Prepare stack
-        stack.items.push(Rc::new(BigInt::from(method_id)));
+        stack
+            .items
+            .push(SafeRc::new_dyn_value(BigInt::from(method_id)));
 
         // Prepare VM state
         let mut b = VmState::builder()
-            .with_raw_stack(Rc::new(stack))
+            .with_raw_stack(SafeRc::new(stack))
             .with_code(self.code.clone())
             .with_data(self.data.clone())
             .with_smc_info(self.args.build_smc_info(self.code.clone()))
-            .with_libraries(self.args.collect_libraries())
+            .with_libraries(&self.args.libraries)
             .with_gas(self.args.gas_params.unwrap_or_else(GasParams::getter))
             .with_modifiers(BehaviourModifiers {
                 chksig_always_succeed: self.args.ignore_chksig,
                 ..Default::default()
             });
 
+        let mut writer;
         let mut debug_output = None;
         if self.args.debug_enabled {
-            let writer = DebugOutput::default();
+            writer = DebugOutput::default();
             debug_output = Some(writer.buffer.clone());
-            b = b.with_debug(writer);
+            b = b.with_debug(&mut writer);
         }
 
         let mut vm = b.build();
@@ -95,8 +99,8 @@ impl TvmEmulator {
 
         // Parse VM output
         let stack = vm.stack.clone();
-        let gas_used = vm.gas.gas_consumed();
-        let accepted = vm.gas.gas_credit == 0;
+        let gas_used = vm.gas.consumed();
+        let accepted = vm.gas.credit() == 0;
 
         let mut actions = None;
 
@@ -150,6 +154,7 @@ impl TvmEmulator {
             max: u64::MAX,
             limit: gas_limit as u64,
             credit: 0,
+            price: 1000 << 16,
         });
     }
 }
@@ -158,7 +163,7 @@ pub struct Answer {
     pub code: Cell,
     pub data: Cell,
     pub accepted: bool,
-    pub stack: Rc<Stack>,
+    pub stack: SafeRc<Stack>,
     pub actions: Option<Cell>,
     pub exit_code: i32,
     pub gas_used: u64,
@@ -168,7 +173,7 @@ pub struct Answer {
 #[derive(Default)]
 pub struct Args {
     pub gas_params: Option<GasParams>,
-    pub raw_c7: Option<Rc<Tuple>>,
+    pub raw_c7: Option<SafeRc<Tuple>>,
     pub now: Option<u32>,
     pub rand_seed: Option<HashBytes>,
     pub ignore_chksig: bool,
@@ -179,17 +184,10 @@ pub struct Args {
     pub address: Option<StdAddr>,
     pub config: Option<ParsedConfig>,
     pub libraries: Option<Dict<HashBytes, SimpleLib>>,
-    pub prev_blocks_info: Option<Rc<Tuple>>,
+    pub prev_blocks_info: Option<SafeRc<Tuple>>,
 }
 
 impl Args {
-    fn collect_libraries(&self) -> Vec<Dict<HashBytes, SimpleLib>> {
-        // TODO: Add global libraries.
-        let mut libraries = Vec::new();
-        libraries.extend(self.libraries.clone());
-        libraries
-    }
-
     fn build_smc_info(&self, code: Cell) -> Box<dyn SmcInfo> {
         if let Some(c7) = self.raw_c7.clone() {
             return Box::new(CustomSmcInfo {
@@ -246,30 +244,22 @@ impl Args {
     }
 
     fn build_stack(&self, message_amount: u64, message_body: Cell, selector: i32) -> Stack {
-        let mut stack = Stack::default();
-
-        // Account balance
-        stack.items.push(Rc::new(BigInt::from(if self.balance > 0 {
-            self.balance
-        } else {
-            10_000_000_000
-        })));
-
-        // Message balance
-        stack.items.push(Rc::new(BigInt::from(message_amount)));
-
-        // Message cell
-        stack.items.push(Rc::new(if selector == 0 {
-            self.build_internal_message(message_amount, message_body.clone())
-        } else {
-            self.build_external_message(message_body.clone())
-        }));
-
-        // Message body
-        stack.items.push(Rc::new(message_body));
-
-        // Done
-        stack
+        Stack {
+            items: tuple![
+                int if self.balance > 0 {
+                    self.balance
+                } else {
+                    10_000_000_000
+                },
+                int message_amount,
+                cell if selector == 0 {
+                    self.build_internal_message(message_amount, message_body.clone())
+                } else {
+                    self.build_external_message(message_body.clone())
+                },
+                slice message_body,
+            ],
+        }
     }
 
     fn build_internal_message(&self, amount: u64, body: Cell) -> Cell {
@@ -321,7 +311,7 @@ impl Args {
 #[derive(Clone)]
 pub struct ParsedConfig {
     pub params: BlockchainConfigParams,
-    pub unpacked: Rc<Tuple>,
+    pub unpacked: SafeRc<Tuple>,
     // TODO: Replace with VM version.
     pub version: u32,
 }

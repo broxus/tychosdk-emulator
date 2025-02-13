@@ -76,15 +76,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "325918d6fe32f23b19878fe4b34794ae41fc19ddbe53b10571a4874d44ffd39b"
 
 [[package]]
-name = "castaway"
-version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0abae9be0aaf9ea96a3b1b8b1b55c602ca751eba1b1500220cea4ecbafe7c0d5"
-dependencies = [
- "rustversion",
-]
-
-[[package]]
 name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -213,9 +204,9 @@ checksum = "0d6ef0072f8a535281e4876be788938b528e9a1d43900b82c2569af7da799125"
 
 [[package]]
 name = "everscale-crypto"
-version = "0.2.1"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b0304a55e328ca4f354e59e6816bccb43b03f681b85b31c6bd10ea7233d62b5"
+checksum = "0da807f69d3d795921a2aaf4bd9b449e3d280d28b104e4909890a50c40a33950"
 dependencies = [
  "curve25519-dalek",
  "generic-array",
@@ -228,7 +219,7 @@ dependencies = [
 [[package]]
 name = "everscale-types"
 version = "0.1.2"
-source = "git+https://github.com/broxus/everscale-types.git?rev=6e3c289f9bbf46337b11b24656a9c87ce409323e#6e3c289f9bbf46337b11b24656a9c87ce409323e"
+source = "git+https://github.com/broxus/everscale-types.git?rev=f2d1f66a1d2e22cbf61bd4ef9783c35be26a2468#f2d1f66a1d2e22cbf61bd4ef9783c35be26a2468"
 dependencies = [
  "ahash",
  "base64",
@@ -241,48 +232,15 @@ dependencies = [
  "serde",
  "sha2",
  "smallvec",
- "thiserror 1.0.69",
+ "thiserror",
  "tl-proto",
 ]
 
 [[package]]
 name = "everscale-types-proc"
 version = "0.1.5"
-source = "git+https://github.com/broxus/everscale-types.git?rev=6e3c289f9bbf46337b11b24656a9c87ce409323e#6e3c289f9bbf46337b11b24656a9c87ce409323e"
+source = "git+https://github.com/broxus/everscale-types.git?rev=f2d1f66a1d2e22cbf61bd4ef9783c35be26a2468#f2d1f66a1d2e22cbf61bd4ef9783c35be26a2468"
 dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "everscale-vm"
-version = "0.1.0"
-source = "git+https://github.com/broxus/everscale-vm.git?rev=100d1a5e5c87#100d1a5e5c8799d1591fef6c259f45580c69cfdd"
-dependencies = [
- "ahash",
- "anyhow",
- "bitflags",
- "blake2",
- "bumpalo",
- "castaway",
- "dyn-clone",
- "everscale-crypto",
- "everscale-types",
- "everscale-vm-proc",
- "num-bigint",
- "num-integer",
- "num-traits",
- "sha2",
- "thiserror 1.0.69",
-]
-
-[[package]]
-name = "everscale-vm-proc"
-version = "0.1.0"
-source = "git+https://github.com/broxus/everscale-vm.git?rev=100d1a5e5c87#100d1a5e5c8799d1591fef6c259f45580c69cfdd"
-dependencies = [
- "darling",
  "proc-macro2",
  "quote",
  "syn",
@@ -398,7 +356,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b7cafe60d6cf8e62e1b9b2ea516a089c008945bb5a275416789e7db0bc199dc"
 dependencies = [
  "memchr",
- "thiserror 2.0.9",
+ "thiserror",
  "ucd-trie",
 ]
 
@@ -495,9 +453,9 @@ dependencies = [
 
 [[package]]
 name = "rustc-hash"
-version = "1.1.0"
+version = "2.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "08d43f7aa6b08d49f382cde6a7982047c3426db949b1424bc4b7ec9ae12c6ce2"
+checksum = "357703d41365b4b27c590e3ed91eabb1b663f07c4c084095e60cbed4362dff0d"
 
 [[package]]
 name = "rustc_version"
@@ -507,12 +465,6 @@ checksum = "cfcb3a22ef46e85b45de6ee7e79d063319ebb6594faafcf1c225ea92ab6e9b92"
 dependencies = [
  "semver",
 ]
-
-[[package]]
-name = "rustversion"
-version = "1.0.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f7c45b9784283f1b2e7fb61b42047c2fd678ef0960d4f6f1eba131594cc369d4"
 
 [[package]]
 name = "ryu"
@@ -615,31 +567,11 @@ dependencies = [
 
 [[package]]
 name = "thiserror"
-version = "1.0.69"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b6aaf5339b578ea85b50e080feb250a3e8ae8cfcdff9a461c9ec2904bc923f52"
-dependencies = [
- "thiserror-impl 1.0.69",
-]
-
-[[package]]
-name = "thiserror"
 version = "2.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f072643fd0190df67a8bab670c20ef5d8737177d6ac6b2e9a236cb096206b2cc"
 dependencies = [
- "thiserror-impl 2.0.9",
-]
-
-[[package]]
-name = "thiserror-impl"
-version = "1.0.69"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4fee6c4efc90059e10f81e6d42c60a18f76588c3d74cb83a0b242a2b6c7504c1"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
+ "thiserror-impl",
 ]
 
 [[package]]
@@ -655,23 +587,23 @@ dependencies = [
 
 [[package]]
 name = "tl-proto"
-version = "0.4.11"
+version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "32253fd484586f01479781e46dd147005d314844d00303df6100f130435b2e8d"
+checksum = "d4e0d6f1ad91e0776280a494c5c5ed10922988b6c4475a11dd92c73c6838b381"
 dependencies = [
  "bytes",
  "digest",
  "sha2",
  "smallvec",
- "thiserror 1.0.69",
+ "thiserror",
  "tl-proto-proc",
 ]
 
 [[package]]
 name = "tl-proto-proc"
-version = "0.4.7"
+version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "140da3028e6bc0a46b168845e3f5252e906d0fbdcc6074f96424fe830c86b9ae"
+checksum = "4c1a51b272c6c86781e53fb392cc1e09aa857158ff8ef074ae13e926e1f5dd80"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -682,15 +614,15 @@ dependencies = [
 
 [[package]]
 name = "tl-scheme"
-version = "0.2.1"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c495d2f03b113ab2ac9eab55168855ef43c04e0097b58f3eb1287a5da73e51b8"
+checksum = "1f0c39863b77e0997772c8e1f19ae9cef5d57d73bbc1fd1a211e0a91668b54d6"
 dependencies = [
  "crc",
  "pest",
  "pest_derive",
  "rustc-hash",
- "thiserror 1.0.69",
+ "thiserror",
 ]
 
 [[package]]
@@ -699,12 +631,45 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "everscale-types",
- "everscale-vm",
  "libc",
  "log",
  "num-bigint",
  "serde",
  "serde_json",
+ "tycho-vm",
+ "wasm-bindgen",
+]
+
+[[package]]
+name = "tycho-vm"
+version = "0.1.0"
+source = "git+https://github.com/broxus/tycho-vm.git?rev=2be3fbe543fdb52d6bac986f53ac85326cf0a96d#2be3fbe543fdb52d6bac986f53ac85326cf0a96d"
+dependencies = [
+ "ahash",
+ "anyhow",
+ "bitflags",
+ "blake2",
+ "dyn-clone",
+ "everscale-crypto",
+ "everscale-types",
+ "num-bigint",
+ "num-integer",
+ "num-traits",
+ "sha2",
+ "thiserror",
+ "tl-proto",
+ "tycho-vm-proc",
+]
+
+[[package]]
+name = "tycho-vm-proc"
+version = "0.1.0"
+source = "git+https://github.com/broxus/tycho-vm.git?rev=2be3fbe543fdb52d6bac986f53ac85326cf0a96d#2be3fbe543fdb52d6bac986f53ac85326cf0a96d"
+dependencies = [
+ "darling",
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -736,6 +701,60 @@ name = "wasi"
 version = "0.11.0+wasi-snapshot-preview1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
+
+[[package]]
+name = "wasm-bindgen"
+version = "0.2.99"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a474f6281d1d70c17ae7aa6a613c87fce69a127e2624002df63dcb39d6cf6396"
+dependencies = [
+ "cfg-if",
+ "once_cell",
+ "wasm-bindgen-macro",
+]
+
+[[package]]
+name = "wasm-bindgen-backend"
+version = "0.2.99"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5f89bb38646b4f81674e8f5c3fb81b562be1fd936d84320f3264486418519c79"
+dependencies = [
+ "bumpalo",
+ "log",
+ "proc-macro2",
+ "quote",
+ "syn",
+ "wasm-bindgen-shared",
+]
+
+[[package]]
+name = "wasm-bindgen-macro"
+version = "0.2.99"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2cc6181fd9a7492eef6fef1f33961e3695e4579b9872a6f7c83aee556666d4fe"
+dependencies = [
+ "quote",
+ "wasm-bindgen-macro-support",
+]
+
+[[package]]
+name = "wasm-bindgen-macro-support"
+version = "0.2.99"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "30d7a95b763d3c45903ed6c81f156801839e5ee968bb07e534c44df0fcd330c2"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+ "wasm-bindgen-backend",
+ "wasm-bindgen-shared",
+]
+
+[[package]]
+name = "wasm-bindgen-shared"
+version = "0.2.99"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "943aab3fdaaa029a6e0271b35ea10b72b943135afe9bffca82384098ad0e06a6"
 
 [[package]]
 name = "zerocopy"

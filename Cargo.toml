@@ -13,19 +13,21 @@ log = "0.4"
 num-bigint = "0.4"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0" }
+wasm-bindgen = { version = "0.2.99", optional = true }
 
 everscale-types = { version = "0.1.2", default-features = false, features = [
     "sync",
     "serde",
     "base64",
 ] }
-everscale-vm = { git = "https://github.com/broxus/everscale-vm.git", rev = "100d1a5e5c87" }
+tycho-vm = { git = "https://github.com/broxus/tycho-vm.git", rev = "2be3fbe543fdb52d6bac986f53ac85326cf0a96d" }
 
 [build-dependencies]
 anyhow = "1.0"
 
 [features]
 native = ["libc"]
+wasm = ["wasm-bindgen"]
 
 [patch.crates-io]
-everscale-types = { git = "https://github.com/broxus/everscale-types.git", rev = "6e3c289f9bbf46337b11b24656a9c87ce409323e" }
+everscale-types = { git = "https://github.com/broxus/everscale-types.git", rev = "f2d1f66a1d2e22cbf61bd4ef9783c35be26a2468" }

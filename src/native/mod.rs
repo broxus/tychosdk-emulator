@@ -4,18 +4,23 @@ use std::sync::OnceLock;
 use anyhow::{Context, Result};
 use everscale_types::models::StdAddr;
 use everscale_types::prelude::*;
-use everscale_vm::{Stack, Tuple, TupleExt};
+use tycho_vm::{Stack, Tuple, TupleExt};
 
-use crate::models::*;
+use self::models::{
+    TvmEmulatorErrorResponse, TvmEmulatorRunGetMethodResponse, TvmEmulatorSendMessageResponse,
+};
 use crate::tvm_emulator::{ParsedConfig, TvmEmulator};
 use crate::util::JsonBool;
+use crate::VersionInfo;
+
+mod models;
 
 // === Common State ===
 
 #[no_mangle]
 pub unsafe extern "C" fn emulator_version() -> *mut c_char {
     static RESPONSE: OnceLock<String> = OnceLock::new();
-    make_c_str(RESPONSE.get_or_init(|| serde_json::to_string(&VersionResponse::CURRENT).unwrap()))
+    make_c_str(RESPONSE.get_or_init(|| serde_json::to_string(VersionInfo::current()).unwrap()))
 }
 
 #[no_mangle]

@@ -1,30 +1,14 @@
-use std::rc::Rc;
-
 use everscale_types::prelude::*;
-use everscale_vm::Stack;
 use serde::Serialize;
+use tycho_vm::{SafeRc, Stack};
 
 use crate::util::{serde_string, JsonBool};
-
-#[derive(Debug, Clone, Copy, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct VersionResponse {
-    pub emulator_lib_version: &'static str,
-    pub emulator_lib_build: &'static str,
-}
-
-impl VersionResponse {
-    pub const CURRENT: Self = Self {
-        emulator_lib_version: crate::EMULATOR_VERSION,
-        emulator_lib_build: crate::EMULATOR_BUILD,
-    };
-}
 
 #[derive(Debug, Clone, Serialize)]
 pub struct TvmEmulatorRunGetMethodResponse {
     pub success: JsonBool<true>,
     #[serde(with = "BocRepr")]
-    pub stack: Rc<Stack>,
+    pub stack: SafeRc<Stack>,
     #[serde(with = "serde_string")]
     pub gas_used: u64,
     pub vm_exit_code: i32,
