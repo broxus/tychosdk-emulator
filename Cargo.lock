@@ -219,7 +219,7 @@ dependencies = [
 [[package]]
 name = "everscale-types"
 version = "0.1.2"
-source = "git+https://github.com/broxus/everscale-types.git?rev=f2d1f66a1d2e22cbf61bd4ef9783c35be26a2468#f2d1f66a1d2e22cbf61bd4ef9783c35be26a2468"
+source = "git+https://github.com/broxus/everscale-types.git?rev=9dcfe1aa2ebeca82428cc860267653ec8036725e#9dcfe1aa2ebeca82428cc860267653ec8036725e"
 dependencies = [
  "ahash",
  "base64",
@@ -234,12 +234,13 @@ dependencies = [
  "smallvec",
  "thiserror",
  "tl-proto",
+ "typeid",
 ]
 
 [[package]]
 name = "everscale-types-proc"
 version = "0.1.5"
-source = "git+https://github.com/broxus/everscale-types.git?rev=f2d1f66a1d2e22cbf61bd4ef9783c35be26a2468#f2d1f66a1d2e22cbf61bd4ef9783c35be26a2468"
+source = "git+https://github.com/broxus/everscale-types.git?rev=9dcfe1aa2ebeca82428cc860267653ec8036725e#9dcfe1aa2ebeca82428cc860267653ec8036725e"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -636,14 +637,28 @@ dependencies = [
  "num-bigint",
  "serde",
  "serde_json",
+ "tycho-executor",
  "tycho-vm",
  "wasm-bindgen",
 ]
 
 [[package]]
+name = "tycho-executor"
+version = "0.1.0"
+source = "git+https://github.com/broxus/tycho-vm.git?rev=b1e08e7e082ae66561ba14c7f9753ce1b168b5ff#b1e08e7e082ae66561ba14c7f9753ce1b168b5ff"
+dependencies = [
+ "ahash",
+ "anyhow",
+ "everscale-types",
+ "num-bigint",
+ "thiserror",
+ "tycho-vm",
+]
+
+[[package]]
 name = "tycho-vm"
 version = "0.1.0"
-source = "git+https://github.com/broxus/tycho-vm.git?rev=2be3fbe543fdb52d6bac986f53ac85326cf0a96d#2be3fbe543fdb52d6bac986f53ac85326cf0a96d"
+source = "git+https://github.com/broxus/tycho-vm.git?rev=b1e08e7e082ae66561ba14c7f9753ce1b168b5ff#b1e08e7e082ae66561ba14c7f9753ce1b168b5ff"
 dependencies = [
  "ahash",
  "anyhow",
@@ -664,13 +679,19 @@ dependencies = [
 [[package]]
 name = "tycho-vm-proc"
 version = "0.1.0"
-source = "git+https://github.com/broxus/tycho-vm.git?rev=2be3fbe543fdb52d6bac986f53ac85326cf0a96d#2be3fbe543fdb52d6bac986f53ac85326cf0a96d"
+source = "git+https://github.com/broxus/tycho-vm.git?rev=b1e08e7e082ae66561ba14c7f9753ce1b168b5ff#b1e08e7e082ae66561ba14c7f9753ce1b168b5ff"
 dependencies = [
  "darling",
  "proc-macro2",
  "quote",
  "syn",
 ]
+
+[[package]]
+name = "typeid"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0e13db2e0ccd5e14a544e8a246ba2312cd25223f616442d7f2cb0e3db614236e"
 
 [[package]]
 name = "typenum"

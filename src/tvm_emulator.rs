@@ -214,7 +214,10 @@ impl Args {
             global_version = config.version;
 
             if global_version >= 6 {
-                unpacked_config = Some(config.unpacked.clone());
+                unpacked_config = Some(
+                    SmcInfoTonV6::unpack_config(&config.params, now)
+                        .expect("parsed config must be valid"),
+                );
             }
         }
 
@@ -240,10 +243,19 @@ impl Args {
             b = b.with_unpacked_config(unpacked_config);
         }
 
-        Box::new(b)
+        if global_version < 9 {
+            return Box::new(b);
+        }
+
+        Box::new(b.require_ton_v9())
     }
 
     fn build_stack(&self, message_amount: u64, message_body: Cell, selector: i32) -> Stack {
+        let body_cs = (
+            message_body.clone(),
+            CellSliceRange::full(message_body.as_ref()),
+        );
+
         Stack {
             items: tuple![
                 int if self.balance > 0 {
@@ -257,7 +269,7 @@ impl Args {
                 } else {
                     self.build_external_message(message_body.clone())
                 },
-                slice message_body,
+                slice body_cs,
             ],
         }
     }
@@ -311,7 +323,6 @@ impl Args {
 #[derive(Clone)]
 pub struct ParsedConfig {
     pub params: BlockchainConfigParams,
-    pub unpacked: SafeRc<Tuple>,
     // TODO: Replace with VM version.
     pub version: u32,
 }
@@ -320,16 +331,15 @@ impl ParsedConfig {
     pub fn try_from_root(root: Cell) -> Result<Self> {
         let params = BlockchainConfigParams::from_raw(root);
 
+        // Try to unpack config to return error early.
+        SmcInfoTonV6::unpack_config(&params, 0).context("Failed to unpack config params")?;
+
         let global = params
             .get_global_version()
             .context("Failed to get global version")?;
 
-        let unpacked =
-            SmcInfoTonV6::unpack_config(&params, 0).context("Failed to unpack config params")?;
-
         Ok(Self {
             params,
-            unpacked,
             version: global.version,
         })
     }

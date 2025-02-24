@@ -311,7 +311,7 @@ pub unsafe extern "C" fn tvm_emulator_emulate_run_method(
         let params_boc = std::slice::from_raw_parts(params_boc.cast::<u8>(), len as _);
         let params_cell = Boc::decode(params_boc)?;
 
-        let mut cs = params_cell.as_slice_allow_pruned();
+        let mut cs = params_cell.as_slice()?;
         let code = cs.load_reference_cloned()?;
         let data = cs.load_reference_cloned()?;
 
