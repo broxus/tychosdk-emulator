@@ -1,3 +1,4 @@
+use everscale_types::models::ShardAccount;
 use everscale_types::prelude::*;
 use serde::Serialize;
 use tycho_vm::{SafeRc, Stack};
@@ -31,6 +32,36 @@ pub struct TvmEmulatorSendMessageResponse {
     pub new_code: Cell,
     #[serde(with = "Boc")]
     pub new_data: Cell,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(untagged)]
+pub enum TxEmulatorResponse {
+    Success(TxEmulatorSuccessResponse),
+    NotAccepted(TxEmulatorMsgNotAcceptedResponse),
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct TxEmulatorSuccessResponse {
+    pub success: JsonBool<true>,
+    #[serde(with = "Boc")]
+    pub transaction: Cell,
+    #[serde(with = "BocRepr")]
+    pub shard_account: ShardAccount,
+    pub vm_log: String,
+    #[serde(with = "Boc")]
+    pub actions: Option<Cell>,
+    pub elapsed_time: f64,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct TxEmulatorMsgNotAcceptedResponse {
+    pub success: JsonBool<false>,
+    pub error: &'static str,
+    pub external_not_accepted: JsonBool<true>,
+    pub vm_log: String,
+    pub vm_exit_code: i32,
+    pub elapsed_time: f64,
 }
 
 #[derive(Debug, Clone, Copy)]

@@ -1,8 +1,58 @@
 use std::borrow::Cow;
 use std::str::FromStr;
 
+use anyhow::{Context, Result};
+use everscale_types::models::BlockchainConfigParams;
+use everscale_types::prelude::*;
 use serde::de::Error;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Copy, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VersionInfo {
+    pub emulator_lib_version: &'static str,
+    pub emulator_lib_build: &'static str,
+}
+
+impl VersionInfo {
+    pub fn current() -> &'static Self {
+        static CURRENT: VersionInfo = VersionInfo {
+            emulator_lib_version: EMULATOR_VERSION,
+            emulator_lib_build: EMULATOR_BUILD,
+        };
+
+        &CURRENT
+    }
+}
+
+static EMULATOR_VERSION: &str = env!("TYCHO_EMULATOR_VERSION");
+static EMULATOR_BUILD: &str = env!("TYCHO_EMULATOR_BUILD");
+
+#[derive(Clone)]
+pub struct ParsedConfig {
+    pub params: BlockchainConfigParams,
+    // TODO: Replace with VM version.
+    pub version: u32,
+}
+
+impl ParsedConfig {
+    pub fn try_from_root(root: Cell) -> Result<Self> {
+        let params = BlockchainConfigParams::from_raw(root);
+
+        // Try to unpack config to return error early.
+        tycho_vm::SmcInfoTonV6::unpack_config(&params, 0)
+            .context("Failed to unpack config params")?;
+
+        let global = params
+            .get_global_version()
+            .context("Failed to get global version")?;
+
+        Ok(Self {
+            params,
+            version: global.version,
+        })
+    }
+}
 
 #[derive(Default, Debug, Clone, Copy, Eq, PartialEq)]
 pub struct JsonBool<const VALUE: bool>;

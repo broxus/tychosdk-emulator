@@ -1,10 +1,5 @@
-use std::cell::RefCell;
-use std::rc::Rc;
-
-use anyhow::{Context, Result};
 use everscale_types::models::{
-    BlockchainConfigParams, CurrencyCollection, ExtInMsgInfo, IntMsgInfo, MsgInfo, OwnedMessage,
-    SimpleLib, StdAddr,
+    CurrencyCollection, ExtInMsgInfo, IntMsgInfo, MsgInfo, OwnedMessage, SimpleLib, StdAddr,
 };
 use everscale_types::num::Tokens;
 use everscale_types::prelude::*;
@@ -13,6 +8,11 @@ use tycho_vm::{
     tuple, BehaviourModifiers, CustomSmcInfo, GasParams, SafeRc, SmcInfo, SmcInfoBase,
     SmcInfoTonV6, Stack, Tuple, VmState, VmVersion,
 };
+
+use crate::util::ParsedConfig;
+
+const MAX_GAS: u64 = 1_000_000;
+const BASE_GAS_PRICE: u64 = 1000 << 16;
 
 pub struct TvmEmulator {
     pub code: Cell,
@@ -50,10 +50,10 @@ impl TvmEmulator {
             };
 
             self.args.gas_params = Some(GasParams {
-                max: 1000000,
+                max: MAX_GAS,
                 limit,
                 credit,
-                price: 1000 << 16,
+                price: BASE_GAS_PRICE,
             });
         }
 
@@ -84,12 +84,9 @@ impl TvmEmulator {
                 ..Default::default()
             });
 
-        let mut writer;
-        let mut debug_output = None;
+        let mut vm_log = String::new();
         if self.args.debug_enabled {
-            writer = DebugOutput::default();
-            debug_output = Some(writer.buffer.clone());
-            b = b.with_debug(&mut writer);
+            b = b.with_debug(&mut vm_log);
         }
 
         let mut vm = b.build();
@@ -113,12 +110,9 @@ impl TvmEmulator {
             }
         }
 
-        drop(vm);
+        let missing_library = vm.gas.missing_library();
 
-        let vm_log = match debug_output {
-            None => String::new(),
-            Some(output) => Rc::unwrap_or_clone(output).into_inner(),
-        };
+        drop(vm);
 
         Answer {
             code,
@@ -129,6 +123,7 @@ impl TvmEmulator {
             exit_code,
             gas_used,
             vm_log,
+            missing_library,
         }
     }
 
@@ -151,10 +146,10 @@ impl TvmEmulator {
 
     pub fn set_gas_limit(&mut self, gas_limit: i64) {
         self.args.gas_params = Some(GasParams {
-            max: u64::MAX,
+            max: u64::MAX, // FIXME: Use `MAX_GAS` instead?
             limit: gas_limit as u64,
             credit: 0,
-            price: 1000 << 16,
+            price: BASE_GAS_PRICE,
         });
     }
 }
@@ -168,6 +163,7 @@ pub struct Answer {
     pub exit_code: i32,
     pub gas_used: u64,
     pub vm_log: String,
+    pub missing_library: Option<HashBytes>,
 }
 
 #[derive(Default)]
@@ -317,47 +313,5 @@ impl Args {
         self.address
             .clone()
             .unwrap_or_else(|| StdAddr::new(0, HashBytes::ZERO))
-    }
-}
-
-#[derive(Clone)]
-pub struct ParsedConfig {
-    pub params: BlockchainConfigParams,
-    // TODO: Replace with VM version.
-    pub version: u32,
-}
-
-impl ParsedConfig {
-    pub fn try_from_root(root: Cell) -> Result<Self> {
-        let params = BlockchainConfigParams::from_raw(root);
-
-        // Try to unpack config to return error early.
-        SmcInfoTonV6::unpack_config(&params, 0).context("Failed to unpack config params")?;
-
-        let global = params
-            .get_global_version()
-            .context("Failed to get global version")?;
-
-        Ok(Self {
-            params,
-            version: global.version,
-        })
-    }
-}
-
-#[derive(Default)]
-struct DebugOutput {
-    buffer: Rc<RefCell<String>>,
-}
-
-impl std::fmt::Write for DebugOutput {
-    fn write_char(&mut self, c: char) -> std::fmt::Result {
-        self.buffer.borrow_mut().push(c);
-        Ok(())
-    }
-
-    fn write_str(&mut self, s: &str) -> std::fmt::Result {
-        self.buffer.borrow_mut().push_str(s);
-        Ok(())
     }
 }

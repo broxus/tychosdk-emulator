@@ -1,17 +1,22 @@
+#![allow(clippy::missing_safety_doc)]
+
 use std::ffi::{c_char, c_int, c_void, CStr};
 use std::sync::OnceLock;
 
 use anyhow::{Context, Result};
-use everscale_types::models::StdAddr;
+use everscale_types::models::{
+    BlockchainConfig, ConfigParam0, IntAddr, MsgInfo, ShardAccount, StdAddr, TickTock,
+};
 use everscale_types::prelude::*;
 use tycho_vm::{Stack, Tuple, TupleExt};
 
 use self::models::{
     TvmEmulatorErrorResponse, TvmEmulatorRunGetMethodResponse, TvmEmulatorSendMessageResponse,
+    TxEmulatorMsgNotAcceptedResponse, TxEmulatorResponse, TxEmulatorSuccessResponse,
 };
-use crate::tvm_emulator::{ParsedConfig, TvmEmulator};
-use crate::util::JsonBool;
-use crate::VersionInfo;
+use crate::tvm_emulator::TvmEmulator;
+use crate::tx_emulator::TxEmulator;
+use crate::util::{JsonBool, ParsedConfig, VersionInfo};
 
 mod models;
 
@@ -53,14 +58,17 @@ pub unsafe extern "C" fn emulator_config_destroy(config: *mut c_void) {
 #[no_mangle]
 pub unsafe extern "C" fn transaction_emulator_create(
     config_params_boc: *const c_char,
-    vm_log_verbosity: c_int,
+    _vm_log_verbosity: c_int,
 ) -> *mut c_void {
-    todo!()
+    ffi_new::<TxEmulator, _>(|| {
+        let config = parse_config(config_params_boc)?;
+        Ok(Box::new(TxEmulator::new(config)))
+    })
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn transaction_emulator_destroy(transaction_emulator: *mut c_void) {
-    todo!()
+    ffi_drop::<TxEmulator>(transaction_emulator)
 }
 
 #[no_mangle]
@@ -68,7 +76,11 @@ pub unsafe extern "C" fn transaction_emulator_set_unixtime(
     transaction_emulator: *mut c_void,
     unixtime: u32,
 ) -> bool {
-    todo!()
+    ffi_run(|| {
+        let emulator = ffi_cast_mut::<TxEmulator>(transaction_emulator)?;
+        emulator.block_unixtime = unixtime;
+        Ok(())
+    })
 }
 
 #[no_mangle]
@@ -76,7 +88,11 @@ pub unsafe extern "C" fn transaction_emulator_set_lt(
     transaction_emulator: *mut c_void,
     lt: u64,
 ) -> bool {
-    todo!()
+    ffi_run(|| {
+        let emulator = ffi_cast_mut::<TxEmulator>(transaction_emulator)?;
+        emulator.lt = lt;
+        Ok(())
+    })
 }
 
 #[no_mangle]
@@ -84,7 +100,12 @@ pub unsafe extern "C" fn transaction_emulator_set_rand_seed(
     transaction_emulator: *mut c_void,
     rand_seed_hex: *const c_char,
 ) -> bool {
-    todo!()
+    ffi_run(|| {
+        let rand_seed = parse_hash(rand_seed_hex).context("Failed to parse rand seed")?;
+        let emulator = ffi_cast_mut::<TxEmulator>(transaction_emulator)?;
+        emulator.rand_seed = rand_seed;
+        Ok(())
+    })
 }
 
 #[no_mangle]
@@ -92,7 +113,11 @@ pub unsafe extern "C" fn transaction_emulator_set_ignore_chksig(
     transaction_emulator: *mut c_void,
     ignore_chksig: bool,
 ) -> bool {
-    todo!()
+    ffi_run(|| {
+        let emulator = ffi_cast_mut::<TxEmulator>(transaction_emulator)?;
+        emulator.vm_modifiers.chksig_always_succeed = ignore_chksig;
+        Ok(())
+    })
 }
 
 #[no_mangle]
@@ -100,7 +125,12 @@ pub unsafe extern "C" fn transaction_emulator_set_config(
     transaction_emulator: *mut c_void,
     config_boc: *const c_char,
 ) -> bool {
-    todo!()
+    ffi_run(|| {
+        let config = parse_config(config_boc)?;
+        let emulator = ffi_cast_mut::<TxEmulator>(transaction_emulator)?;
+        emulator.config = config;
+        Ok(())
+    })
 }
 
 #[no_mangle]
@@ -108,7 +138,12 @@ pub unsafe extern "C" fn transaction_emulator_set_config_object(
     transaction_emulator: *mut c_void,
     config: *mut c_void,
 ) -> bool {
-    todo!()
+    ffi_run(|| {
+        let config = ffi_cast::<ParsedConfig>(config)?;
+        let emulator = ffi_cast_mut::<TxEmulator>(transaction_emulator)?;
+        emulator.config = config.clone();
+        Ok(())
+    })
 }
 
 #[no_mangle]
@@ -116,15 +151,31 @@ pub unsafe extern "C" fn transaction_emulator_set_libs(
     transaction_emulator: *mut c_void,
     libs_boc: *const c_char,
 ) -> bool {
-    todo!()
+    ffi_run(|| {
+        let emulator = ffi_cast_mut::<TxEmulator>(transaction_emulator)?;
+
+        if libs_boc.is_null() {
+            // NOTE: This behaviour is different from the reference, but it seems
+            // to be the only way to reset libraries without creating a new instance.
+            emulator.libraries = Dict::new();
+        } else {
+            let root = parse_boc(libs_boc)?;
+            emulator.libraries = Dict::from_raw(Some(root));
+        }
+        Ok(())
+    })
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn transaction_emulator_set_debug_enabled(
     transaction_emulator: *mut c_void,
-    debug_enabled: bool,
+    _debug_enabled: bool,
 ) -> bool {
-    todo!()
+    ffi_run(|| {
+        let _emulator = ffi_cast_mut::<TxEmulator>(transaction_emulator)?;
+        // TODO: Add support for collecting debug output from the executor.
+        Ok(())
+    })
 }
 
 #[no_mangle]
@@ -132,7 +183,25 @@ pub unsafe extern "C" fn transaction_emulator_set_prev_blocks_info(
     transaction_emulator: *mut c_void,
     info_boc: *const c_char,
 ) -> bool {
-    todo!()
+    ffi_run(|| {
+        let emulator = ffi_cast_mut::<TxEmulator>(transaction_emulator)?;
+        if info_boc.is_null() {
+            return Ok(());
+        }
+
+        let info_cell = parse_boc(info_boc).context("Failed to deserialize previous blocks boc")?;
+        let info_value = Stack::load_stack_value_from_cell(info_cell.as_ref())
+            .context("Failed to deserialize previous blocks tuple")?;
+
+        if info_value.is_null() {
+            emulator.prev_blocks_info = None;
+        } else if let Ok(tuple) = info_value.into_tuple() {
+            emulator.prev_blocks_info = Some(tuple);
+        } else {
+            anyhow::bail!("Failed to set previous blocks tuple: not a tuple");
+        }
+        Ok(())
+    })
 }
 
 #[no_mangle]
@@ -141,7 +210,90 @@ pub unsafe extern "C" fn transaction_emulator_emulate_transaction(
     shard_account_boc: *const c_char,
     message_boc: *const c_char,
 ) -> *mut c_char {
-    todo!()
+    ffi_run_with_response(|| {
+        let emulator = ffi_cast_mut::<TxEmulator>(transaction_emulator)?;
+        let msg_root = parse_boc(message_boc)?;
+
+        let account = parse_boc(shard_account_boc)?
+            .parse::<ShardAccount>()
+            .context("Failed to unpack shard account")?;
+
+        let msg_info = msg_root
+            .parse::<MsgInfo>()
+            .context("Failed to unpack message info")?;
+
+        let IntAddr::Std(address) = (match account.load_account()? {
+            Some(account) => account.address,
+            None => match &msg_info {
+                MsgInfo::Int(info) => info.dst.clone(),
+                MsgInfo::ExtIn(info) => info.dst.clone(),
+                MsgInfo::ExtOut(_) => {
+                    anyhow::bail!("Only internal and external inbound messages are accepted");
+                }
+            },
+        }) else {
+            anyhow::bail!("var_addr is not supported");
+        };
+
+        let mut params = emulator.make_params();
+        if params.block_unixtime == 0 {
+            params.block_unixtime = std::time::SystemTime::now()
+                .duration_since(std::time::SystemTime::UNIX_EPOCH)
+                .unwrap()
+                .as_secs() as u32;
+        }
+
+        let config = tycho_executor::ParsedConfig::parse(
+            BlockchainConfig {
+                address: match emulator.config.params.get::<ConfigParam0>()? {
+                    Some(address) => address,
+                    None => anyhow::bail!("Can't find a config address (param 0)"),
+                },
+                params: emulator.config.params.clone(),
+            },
+            params.block_unixtime,
+        )
+        .context("Failed to unpack blockchain config")?;
+
+        let is_external = msg_info.is_external_in();
+
+        let since = std::time::Instant::now();
+        let output = match tycho_executor::Executor::new(&params, &config).begin_ordinary(
+            &address,
+            is_external,
+            msg_root,
+            &account,
+        ) {
+            Ok(uncommitted) => uncommitted
+                .commit()
+                .context("Failed to commit transaction")?,
+            Err(tycho_executor::TxError::Skipped) if is_external => {
+                return Ok(TxEmulatorResponse::NotAccepted(
+                    TxEmulatorMsgNotAcceptedResponse {
+                        success: JsonBool,
+                        error: "External message not accepted by smart contract",
+                        external_not_accepted: JsonBool,
+                        vm_log: String::new(),
+                        // TODO: Somehow get exit code from the execution result.
+                        vm_exit_code: 0,
+                        elapsed_time: since.elapsed().as_secs_f64(),
+                    },
+                ));
+            }
+            Err(e) => anyhow::bail!("Fatal executor error: {e:?}"),
+        };
+
+        Ok(TxEmulatorResponse::Success(TxEmulatorSuccessResponse {
+            success: JsonBool,
+            transaction: output.transaction.into_inner(),
+            shard_account: output.new_state,
+            // TODO: Somehow collect the log from the compute phase.
+            vm_log: String::new(),
+            // TODO: Somehow collect actions from the compute phase.
+            actions: None,
+            elapsed_time: since.elapsed().as_secs_f64(),
+        }))
+    })
 }
 
 #[no_mangle]
@@ -150,7 +302,69 @@ pub unsafe extern "C" fn transaction_emulator_emulate_tick_tock_transaction(
     shard_account_boc: *const c_char,
     is_tock: bool,
 ) -> *mut c_char {
-    todo!()
+    ffi_run_with_response(|| {
+        let emulator = ffi_cast_mut::<TxEmulator>(transaction_emulator)?;
+
+        let account = parse_boc(shard_account_boc)?
+            .parse::<ShardAccount>()
+            .context("Failed to unpack shard account")?;
+
+        let IntAddr::Std(address) = (match account.load_account()? {
+            Some(account) => account.address,
+            None => anyhow::bail!("Can't run tick/tock transaction on account_none"),
+        }) else {
+            anyhow::bail!("var_addr is not supported");
+        };
+
+        let mut params = emulator.make_params();
+        if params.block_unixtime == 0 {
+            params.block_unixtime = std::time::SystemTime::now()
+                .duration_since(std::time::SystemTime::UNIX_EPOCH)
+                .unwrap()
+                .as_secs() as u32;
+        }
+
+        let config = tycho_executor::ParsedConfig::parse(
+            BlockchainConfig {
+                address: match emulator.config.params.get::<ConfigParam0>()? {
+                    Some(address) => address,
+                    None => anyhow::bail!("Can't find a config address (param 0)"),
+                },
+                params: emulator.config.params.clone(),
+            },
+            params.block_unixtime,
+        )
+        .context("Failed to unpack blockchain config")?;
+
+        let since = std::time::Instant::now();
+
+        let output = match tycho_executor::Executor::new(&params, &config).begin_tick_tock(
+            &address,
+            if is_tock {
+                TickTock::Tock
+            } else {
+                TickTock::Tick
+            },
+            &account,
+        ) {
+            Ok(uncommitted) => uncommitted
+                .commit()
+                .context("Failed to commit transaction")?,
+            Err(tycho_executor::TxError::Skipped) => anyhow::bail!("Transaction execution skipped"),
+            Err(tycho_executor::TxError::Fatal(e)) => anyhow::bail!("Fatal executor error: {e:?}"),
+        };
+
+        Ok(TxEmulatorResponse::Success(TxEmulatorSuccessResponse {
+            success: JsonBool,
+            transaction: output.transaction.into_inner(),
+            shard_account: output.new_state,
+            // TODO: Somehow collect the log from the compute phase.
+            vm_log: String::new(),
+            // TODO: Somehow collect actions from the compute phase.
+            actions: None,
+            elapsed_time: since.elapsed().as_secs_f64(),
+        }))
+    })
 }
 
 // === TVM Emulator ===
@@ -217,8 +431,8 @@ pub unsafe extern "C" fn tvm_emulator_set_config_object(
     config: *mut c_void,
 ) -> bool {
     ffi_run(|| {
-        let emulator = ffi_cast_mut::<TvmEmulator>(tvm_emulator)?;
         let config = ffi_cast::<ParsedConfig>(config)?;
+        let emulator = ffi_cast_mut::<TvmEmulator>(tvm_emulator)?;
         emulator.args.config = Some(config.clone());
         Ok(())
     })
@@ -295,8 +509,7 @@ pub unsafe extern "C" fn tvm_emulator_run_get_method(
             gas_used: res.gas_used,
             vm_exit_code: res.exit_code,
             vm_log: res.vm_log,
-            // TODO: Track libraries access in VmState.
-            missing_library: None,
+            missing_library: res.missing_library,
         })
     })
 }
@@ -499,6 +712,7 @@ unsafe fn ffi_cast<'a, T>(value: *mut c_void) -> Result<&'a T> {
 }
 
 unsafe fn parse_boc(boc_str: *const c_char) -> Result<Cell> {
+    anyhow::ensure!(!boc_str.is_null(), "String pointer is null");
     let boc_str = CStr::from_ptr(boc_str).to_str()?;
     Boc::decode_base64(boc_str).map_err(Into::into)
 }
@@ -508,11 +722,13 @@ unsafe fn parse_config(boc_str: *const c_char) -> Result<ParsedConfig> {
 }
 
 unsafe fn parse_std_addr(addr_str: *const c_char) -> Result<StdAddr> {
+    anyhow::ensure!(!addr_str.is_null(), "String pointer is null");
     let addr_str = CStr::from_ptr(addr_str).to_str()?;
     addr_str.parse::<StdAddr>().map_err(Into::into)
 }
 
 unsafe fn parse_hash(hash_str: *const c_char) -> Result<HashBytes> {
+    anyhow::ensure!(!hash_str.is_null(), "String pointer is null");
     let hash_str = CStr::from_ptr(hash_str).to_str()?;
     hash_str.parse::<HashBytes>().map_err(Into::into)
 }
