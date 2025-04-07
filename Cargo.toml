@@ -1,34 +1,6 @@
-[package]
-name = "tycho-emulator"
-version = "0.1.0"
-edition = "2021"
-
-[lib]
-crate-type = ["cdylib"]
-
-[dependencies]
-anyhow = "1.0"
-libc = { version = "0.2", optional = true }
-log = "0.4"
-num-bigint = "0.4"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = { version = "1.0" }
-wasm-bindgen = { version = "0.2.99", optional = true }
-
-everscale-types = { version = "0.1.2", default-features = false, features = [
-    "sync",
-    "serde",
-    "base64",
-] }
-tycho-executor = { git = "https://github.com/broxus/tycho-vm.git", rev = "058a6ff5026679fffb44012556d4bf6ce63e6d26" }
-tycho-vm = { git = "https://github.com/broxus/tycho-vm.git", rev = "058a6ff5026679fffb44012556d4bf6ce63e6d26" }
-
-[build-dependencies]
-anyhow = "1.0"
-
-[features]
-native = ["libc"]
-wasm = ["wasm-bindgen"]
+[workspace]
+resolver = "2"
+members = ["core"]
 
 [patch.crates-io]
-everscale-types = { git = "https://github.com/broxus/everscale-types.git", rev = "9dcfe1aa2ebeca82428cc860267653ec8036725e" }
+everscale-types = { git = "https://github.com/broxus/everscale-types.git", rev = "3a4a60408947a81173ada36bebbb4a09a643370a" }

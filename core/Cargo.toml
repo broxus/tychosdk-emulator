@@ -1,0 +1,45 @@
+[package]
+name = "tycho-emulator"
+version = "0.1.1"
+edition = "2021"
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["-O4", "--enable-mutable-globals"]
+
+[package.metadata.wasm-pack.profile.release.wasm-bindgen]
+debug-js-glue = false
+demangle-name-section = true
+dwarf-debug-info = false
+omit-default-module-path = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+ahash = "0.8.11"
+anyhow = "1.0"
+cfg-if = "1.0"
+getrandom = { version = "0.2", optional = true }
+js-sys = { version = "0.3.77", optional = true }
+libc = { version = "0.2", optional = true }
+log = "0.4"
+num-bigint = "0.4"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = { version = "1.0" }
+wasm-bindgen = { version = "0.2.100", optional = true }
+web-sys = { version = "0.3.77", optional = true, features = ["Performance"] }
+
+everscale-types = { version = "0.1.2", default-features = false, features = [
+    "sync",
+    "serde",
+    "base64",
+] }
+tycho-executor = { git = "https://github.com/broxus/tycho-vm.git", rev = "2528426074e42f0ad7a7b9a3056f6855d356a7e3" }
+tycho-vm = { git = "https://github.com/broxus/tycho-vm.git", rev = "2528426074e42f0ad7a7b9a3056f6855d356a7e3" }
+
+[build-dependencies]
+anyhow = "1.0"
+
+[features]
+native = ["dep:libc"]
+wasm = ["dep:wasm-bindgen", "getrandom/js", "dep:web-sys", "dep:js-sys"]

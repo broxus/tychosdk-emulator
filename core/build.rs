@@ -3,21 +3,22 @@ use std::os::unix::ffi::OsStringExt;
 use anyhow::Result;
 
 fn main() -> Result<()> {
-    let app_version = env("CARGO_PKG_VERSION")?;
-    let app_version = match app_version.to_string_lossy() {
-        std::borrow::Cow::Borrowed(version) => version,
-        std::borrow::Cow::Owned(version) => {
-            anyhow::bail!("invalid CARGO_PKG_VERSION: {version}")
-        }
-    };
-    let git_version = get_git_version()?;
+    let GitInfo {
+        commit_hash,
+        commit_date,
+    } = get_git_info()?;
 
-    println!("cargo:rustc-env=TYCHO_EMULATOR_VERSION={app_version}");
-    println!("cargo:rustc-env=TYCHO_EMULATOR_BUILD={git_version}");
+    println!("cargo:rustc-env=EMULATOR_COMMIT_HASH={commit_hash}");
+    println!("cargo:rustc-env=EMULATOR_COMMIT_DATE={commit_date}");
     Ok(())
 }
 
-fn get_git_version() -> Result<String> {
+struct GitInfo {
+    commit_hash: String,
+    commit_date: String,
+}
+
+fn get_git_info() -> Result<GitInfo> {
     let pkg_dir = std::path::PathBuf::from(env("CARGO_MANIFEST_DIR")?);
     let git_dir = command("git", &["rev-parse", "--git-dir"], Some(pkg_dir));
     let git_dir = match git_dir {
@@ -25,7 +26,10 @@ fn get_git_version() -> Result<String> {
         Err(msg) => {
             println!("cargo:warning=unable to determine git version (not in git repository?)");
             println!("cargo:warning={msg}");
-            return Ok("unknown".to_owned());
+            return Ok(GitInfo {
+                commit_hash: "unknown".to_owned(),
+                commit_date: "unknown".to_owned(),
+            });
         }
     };
 
@@ -34,24 +38,28 @@ fn get_git_version() -> Result<String> {
         println!("cargo:rerun-if-changed={}", path.display());
     }
 
-    // * --always -> if there is no matching tag, use commit hash
-    // * --dirty=-modified -> append '-modified' if there are local changes
-    // * --tags -> consider tags even if they are unnanotated
-    // * --match=v[0-9]* -> only consider tags starting with a v+digit
-    let args = &[
-        "describe",
-        "--always",
-        "--dirty=-modified",
-        "--tags",
-        "--match=v[0-9]*",
-    ];
+    let args = &["show", "-s", "--format=%H"];
     let out = command("git", args, None)?;
-    match String::from_utf8_lossy(&out) {
-        std::borrow::Cow::Borrowed(version) => Ok(version.trim().to_string()),
+    let commit_hash = match String::from_utf8_lossy(&out) {
+        std::borrow::Cow::Borrowed(version) => version.trim().to_string(),
         std::borrow::Cow::Owned(version) => {
             anyhow::bail!("git: invalid output: {version}")
         }
-    }
+    };
+
+    let args = &["show", "-s", "--format=%ci"];
+    let out = command("git", args, None)?;
+    let commit_date = match String::from_utf8_lossy(&out) {
+        std::borrow::Cow::Borrowed(version) => version.trim().to_string(),
+        std::borrow::Cow::Owned(version) => {
+            anyhow::bail!("git: invalid output: {version}")
+        }
+    };
+
+    Ok(GitInfo {
+        commit_hash,
+        commit_date,
+    })
 }
 
 fn command(prog: &str, args: &[&str], cwd: Option<std::path::PathBuf>) -> Result<Vec<u8>> {

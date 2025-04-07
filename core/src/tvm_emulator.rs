@@ -1,5 +1,6 @@
 use everscale_types::models::{
-    CurrencyCollection, ExtInMsgInfo, IntMsgInfo, MsgInfo, OwnedMessage, SimpleLib, StdAddr,
+    CurrencyCollection, ExtInMsgInfo, ExtraCurrencyCollection, IntMsgInfo, MsgInfo, OwnedMessage,
+    SimpleLib, StdAddr,
 };
 use everscale_types::num::Tokens;
 use everscale_types::prelude::*;
@@ -175,6 +176,7 @@ pub struct Args {
     pub ignore_chksig: bool,
     pub amount: u64,
     pub balance: u64,
+    pub extra: ExtraCurrencyCollection,
     pub debug_enabled: bool,
 
     pub address: Option<StdAddr>,
@@ -194,12 +196,17 @@ impl Args {
 
         let now = self.now.unwrap_or_default();
 
+        let balance = CurrencyCollection {
+            tokens: Tokens::new(self.balance as _),
+            other: self.extra.clone(),
+        };
+
         let mut b = SmcInfoBase::new()
             .with_now(now)
             .with_block_lt(0)
             .with_tx_lt(0)
             .with_raw_rand_seed(self.rand_seed.unwrap_or_default())
-            .with_account_balance(CurrencyCollection::new(self.balance as _))
+            .with_account_balance(balance)
             .with_account_addr(self.address().into());
 
         let mut global_version = 1;

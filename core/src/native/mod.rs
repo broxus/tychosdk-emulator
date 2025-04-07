@@ -10,15 +10,13 @@ use everscale_types::models::{
 use everscale_types::prelude::*;
 use tycho_vm::{Stack, Tuple, TupleExt};
 
-use self::models::{
+use crate::models::{
     TvmEmulatorErrorResponse, TvmEmulatorRunGetMethodResponse, TvmEmulatorSendMessageResponse,
     TxEmulatorMsgNotAcceptedResponse, TxEmulatorResponse, TxEmulatorSuccessResponse,
 };
 use crate::tvm_emulator::TvmEmulator;
 use crate::tx_emulator::TxEmulator;
 use crate::util::{JsonBool, ParsedConfig, VersionInfo};
-
-mod models;
 
 // === Common State ===
 
@@ -235,6 +233,7 @@ pub unsafe extern "C" fn transaction_emulator_emulate_transaction(
             anyhow::bail!("var_addr is not supported");
         };
 
+        // TODO: Add support for `signature_with_id`.
         let mut params = emulator.make_params();
         if params.block_unixtime == 0 {
             params.block_unixtime = std::time::SystemTime::now()
@@ -316,6 +315,7 @@ pub unsafe extern "C" fn transaction_emulator_emulate_tick_tock_transaction(
             anyhow::bail!("var_addr is not supported");
         };
 
+        // TODO: Add support for `signature_with_id`.
         let mut params = emulator.make_params();
         if params.block_unixtime == 0 {
             params.block_unixtime = std::time::SystemTime::now()
