@@ -492,38 +492,53 @@ impl<T: std::fmt::Display> Serialize for RunGetMethodErrResponse<T> {
 #[wasm_bindgen(typescript_custom_section)]
 const TYPES: &str = r###"
 export type VersionInfo = {
-    emulatorLibCommitHash: string;
-    emulatorLibCommitDate: string;
+  emulatorLibCommitHash: string;
+  emulatorLibCommitDate: string;
 };
 
-export type EmulatorOkResponse<T> = {
-    output: T;
-    logs: string;
+export type GetMethodInternalParams = {
+  code: string;
+  data: string;
+  verbosity: number;
+  libs: string;
+  address: string;
+  unixtime: number;
+  balance: string;
+  rand_seed: string;
+  gas_limit: string;
+  method_id: number;
+  debug_enabled: boolean;
+  extra_currencies?: { [k: string]: string };
 };
 
-export type EmulatorErrResponse = {
-    fail: true;
-    message: string;
+export type EmulationInternalParams = {
+  utime: number;
+  lt: string;
+  rand_seed: string;
+  ignore_chksig: boolean;
+  debug_enabled: boolean;
+  is_tick_tock?: boolean;
+  is_tock?: boolean;
 };
 
-export type TvmEmulatorOutput =
-    | TvmEmulatorOkOutput
-    | TvmEmulatorErrOutput;
-
-export type TvmEmulatorOkOutput = {
-    success: true;
-    stack: string;
-    gas_used: string;
-    vm_exit_code: number;
-    vm_log: string;
-    missing_library: string | null;
+export type ResultSuccess = {
+  success: true;
+  transaction: string;
+  shard_account: string;
+  vm_log: string;
+  actions: string | null;
 };
 
-export type TvmEmulatorErrOutput = {
-    success: false;
-    error: string;
-    external_not_accepted: false;
-};
+export type ResultError = {
+  success: false;
+  error: string;
+} & (
+  | {
+      vm_log: string;
+      vm_exit_code: number;
+    }
+  | {}
+);
 "###;
 
 #[cfg(test)]

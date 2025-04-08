@@ -4,17 +4,19 @@ import type {
   ExecutorGetMethodResult,
   ExecutorRunTickTockArgs,
   ExecutorRunTransactionArgs,
+  ExecutorVerbosity,
   IExecutor,
 } from "@ton/sandbox";
-import { serializeTuple } from "@ton/core";
-import * as emulatorWasm from "@tychosdk/emulator-wasm";
-import * as global from "../global";
-import {
-  EmulationResult,
-  RunCommonArgs,
-  RunTickTockArgs,
-  RunTransactionArgs,
-} from "@ton/sandbox/dist/executor/Executor";
+import { type Cell, serializeTuple } from "@ton/core";
+
+import type {
+  EmulationInternalParams,
+  GetMethodInternalParams,
+  ResultError,
+  ResultSuccess,
+  VersionInfo,
+} from "../wasm/tycho_emulator.js";
+import * as emulatorWasm from "../wasm/tycho_emulator.js";
 
 type EmulatorWasm = typeof emulatorWasm;
 
@@ -28,7 +30,6 @@ export class TychoExecutor implements IExecutor {
   constructor(private module: EmulatorWasm) {}
 
   static async create() {
-    await (global as any).emulatorWasmLoaded();
     const ex = new TychoExecutor(emulatorWasm);
     return ex;
   }
@@ -79,7 +80,9 @@ export class TychoExecutor implements IExecutor {
     };
   }
 
-  async runTickTock(args: RunTickTockArgs): Promise<EmulationResult> {
+  async runTickTock(
+    args: ExecutorRunTickTockArgs
+  ): Promise<ExecutorEmulationResult> {
     const params: EmulationInternalParams = {
       ...runCommonArgsToInternalParams(args),
       is_tick_tock: true,
@@ -95,7 +98,9 @@ export class TychoExecutor implements IExecutor {
     );
   }
 
-  async runTransaction(args: RunTransactionArgs): Promise<EmulationResult> {
+  async runTransaction(
+    args: ExecutorRunTransactionArgs
+  ): Promise<ExecutorEmulationResult> {
     const params: EmulationInternalParams = runCommonArgsToInternalParams(args);
 
     return this.runCommon(
@@ -108,10 +113,7 @@ export class TychoExecutor implements IExecutor {
   }
 
   getVersion(): { commitHash: string; commitDate: string } {
-    const v: {
-      emulatorLibCommitHash: string;
-      emulatorLibCommitDate: string;
-    } = JSON.parse(this.module.version());
+    const v: VersionInfo = JSON.parse(this.module.version());
 
     return {
       commitHash: v.emulatorLibCommitHash,
@@ -121,7 +123,7 @@ export class TychoExecutor implements IExecutor {
 
   private runCommon(
     ...args: Parameters<typeof emulatorWasm.emulate_with_emulator>
-  ): EmulationResult {
+  ): ExecutorEmulationResult {
     const resp = JSON.parse(
       this.module.emulate_with_emulator.apply(this, args)
     );
@@ -200,46 +202,14 @@ function runCommonArgsToInternalParams(
   };
 }
 
-type EmulationInternalParams = {
-  utime: number;
-  lt: string;
-  rand_seed: string;
-  ignore_chksig: boolean;
-  debug_enabled: boolean;
-  is_tick_tock?: boolean;
-  is_tock?: boolean;
+export type RunCommonArgs = {
+  config: string;
+  libs: Cell | null;
+  verbosity: ExecutorVerbosity;
+  shardAccount: string;
+  now: number;
+  lt: bigint;
+  randomSeed: Buffer | null;
+  ignoreChksig: boolean;
+  debugEnabled: boolean;
 };
-
-type GetMethodInternalParams = {
-  code: string;
-  data: string;
-  verbosity: number;
-  libs: string;
-  address: string;
-  unixtime: number;
-  balance: string;
-  rand_seed: string;
-  gas_limit: string;
-  method_id: number;
-  debug_enabled: boolean;
-  extra_currencies?: { [k: string]: string };
-};
-
-type ResultSuccess = {
-  success: true;
-  transaction: string;
-  shard_account: string;
-  vm_log: string;
-  actions: string | null;
-};
-
-type ResultError = {
-  success: false;
-  error: string;
-} & (
-  | {
-      vm_log: string;
-      vm_exit_code: number;
-    }
-  | {}
-);

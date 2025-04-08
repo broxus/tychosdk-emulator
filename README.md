@@ -41,6 +41,12 @@ To install dependencies:
 bun install
 ```
 
+To build wasm:
+
+```bash
+bun wasm:build
+```
+
 To run tests:
 
 ```bash
@@ -52,20 +58,6 @@ To publish:
 ```bash
 bun run build
 bun publish --access public
-```
-
-### @tychosdk/emulator-wasm
-
-To build:
-
-```bash
-./scripts/build_wasm.sh
-```
-
-To publish:
-
-```bash
-wasm-pack publish --access public
 ```
 
 ## Contributing
