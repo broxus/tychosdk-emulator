@@ -1,7 +1,11 @@
 [package]
 name = "tycho-emulator"
+description = "A Tycho executor emulator."
+repository = "https://github.com/broxus/tycho-emulator"
+authors = ["Ivan Kalinin <i.kalinin@dexpa.io>"]
 version = "0.1.1"
 edition = "2021"
+license = "MIT OR Apache-2.0"
 
 [package.metadata.wasm-pack.profile.release]
 wasm-opt = ["-O4", "--enable-mutable-globals"]

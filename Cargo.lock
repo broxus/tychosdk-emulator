@@ -213,7 +213,7 @@ dependencies = [
 [[package]]
 name = "everscale-types"
 version = "0.1.2"
-source = "git+https://github.com/broxus/everscale-types.git?rev=3a4a60408947a81173ada36bebbb4a09a643370a#3a4a60408947a81173ada36bebbb4a09a643370a"
+source = "git+https://github.com/broxus/everscale-types.git?rev=97424951abb3ec9ea0f1a3e24095eac14096f939#97424951abb3ec9ea0f1a3e24095eac14096f939"
 dependencies = [
  "ahash",
  "base64",
@@ -234,7 +234,7 @@ dependencies = [
 [[package]]
 name = "everscale-types-proc"
 version = "0.1.5"
-source = "git+https://github.com/broxus/everscale-types.git?rev=3a4a60408947a81173ada36bebbb4a09a643370a#3a4a60408947a81173ada36bebbb4a09a643370a"
+source = "git+https://github.com/broxus/everscale-types.git?rev=97424951abb3ec9ea0f1a3e24095eac14096f939#97424951abb3ec9ea0f1a3e24095eac14096f939"
 dependencies = [
  "proc-macro2",
  "quote",

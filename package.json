@@ -1,11 +1,18 @@
 {
   "name": "@tychosdk/emulator",
+  "version": "0.1.0",
+  "description": "Tycho transaction emulator",
   "main": "dist/nodejs.js",
   "browser": "dist/index.js",
   "license": "MIT",
+  "author": "Ivan Kalinin <i.kalinin@dexpa.io>",
   "files": [
     "dist/**/*"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/broxus/tycho-emulator.git"
+  },
   "devDependencies": {
     "@ton/core": "^0.60.1",
     "@ton/crypto": "^3.3.0",
@@ -18,7 +25,7 @@
     "build": "rm -rf dist && bun test && tsc"
   },
   "peerDependencies": {
-    "typescript": "^5.0.0"
+    "@ton/crypto": ">=3.3.0"
   },
   "dependencies": {
     "@tychosdk/emulator-wasm": "^0.1.0"

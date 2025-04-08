@@ -1,4 +1,25 @@
-# @tychosdk/emulator
+# Tycho Emulator
+
+A Tycho executor for [TON Sandbox](https://github.com/ton-org/sandbox).
+
+## Example
+
+```typescript
+import { Blockchain } from "@ton/sandbox";
+import { TychoExecutor } from "@tychosdk/emulator";
+
+const executor = await TychoExecutor.create();
+const blockchain = await Blockchain.create({
+  executor,
+});
+
+const version = executor.getVersion();
+console.log("Version:", version);
+```
+
+## Development
+
+### @tychosdk/emulator
 
 To install dependencies:
 
@@ -6,10 +27,45 @@ To install dependencies:
 bun install
 ```
 
-To run:
+To run tests:
 
 ```bash
-bun run src/index.ts
+bun test
 ```
 
-This project was created using `bun init` in bun v1.1.30. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+To publish:
+
+```bash
+bun run build
+bun publish --access public
+```
+
+### @tychosdk/emulator-wasm
+
+To build:
+
+```bash
+./scripts/build_wasm.sh
+```
+
+To publish:
+
+```bash
+wasm-pack publish --access public
+```
+
+## Contributing
+
+We welcome contributions to the project! If you notice any issues or errors,
+feel free to open an issue or submit a pull request.
+
+## License
+
+Licensed under either of
+
+* Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE)
+  or <https://www.apache.org/licenses/LICENSE-2.0>)
+* MIT license ([LICENSE-MIT](LICENSE-MIT)
+  or <https://opensource.org/licenses/MIT>)
+
+at your option.

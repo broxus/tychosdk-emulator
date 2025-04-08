@@ -74,7 +74,7 @@ PACKAGE_JSON=$(
       .name = \"@$SCOPE/$PKG_NAME\"
       | .main = \"${BASE_NAME}_main.js\"
       | .browser = \"${BASE_NAME}.js\"
-      | .files += [\"${BASE_NAME}_main.js\", \"${BASE_NAME}_main.d.ts\"]
+      | .files += [\"${BASE_NAME}_main.js\", \"${BASE_NAME}_main.d.ts\", \"${BASE_NAME}_bg.wasm.d.ts\"]
       " \
     "$root_dir/pkg/package.json"
 )
