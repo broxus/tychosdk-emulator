@@ -2,7 +2,21 @@
 
 A Tycho executor for [TON Sandbox](https://github.com/ton-org/sandbox).
 
-## Example
+## Installation
+
+Requires node 16 or higher.
+
+```bash
+yarn add @tychosdk/emulator @ton/sandbox @ton/ton @ton/core @ton/crypto
+```
+
+or
+
+```bash
+npm i @tychosdk/emulator @ton/sandbox @ton/ton @ton/core @ton/crypto
+```
+
+## Usage
 
 ```typescript
 import { Blockchain } from "@ton/sandbox";
