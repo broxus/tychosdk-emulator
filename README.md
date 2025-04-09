@@ -39,26 +39,26 @@ console.log("Version:", version);
 To install dependencies:
 
 ```bash
-bun install
+yarn install
 ```
 
 To build wasm:
 
 ```bash
-bun wasm:build
+yarn wasm:build
 ```
 
 To run tests:
 
 ```bash
-bun test
+yarn test
 ```
 
 To publish:
 
 ```bash
-bun run build
-bun publish --access public
+yarn build
+yarn publish --access public
 ```
 
 ## Contributing

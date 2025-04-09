@@ -70,7 +70,7 @@ export class TychoExecutor implements IExecutor {
 
     let stack = serializeTuple(args.stack);
 
-    const resp: OkResponse<RunGetMethodResponse> | ErrResponse = JSON.parse(
+    const res: OkResponse<RunGetMethodResponse> | ErrResponse = JSON.parse(
       this.module.run_get_method(
         JSON.stringify(params),
         stack.toBoc().toString("base64"),
@@ -78,14 +78,15 @@ export class TychoExecutor implements IExecutor {
       )
     );
 
-    if (resp.ok) {
+    if (res.ok) {
+      const { debug_log, ...output } = res.output;
       return {
-        output: resp.output,
-        logs: resp.logs,
-        debugLogs: "",
+        output,
+        logs: res.logs,
+        debugLogs: debug_log,
       };
     } else {
-      throw new Error(`Unknown emulation error: ${resp.message}`);
+      throw new Error(`Unknown emulation error: ${res.message}`);
     }
   }
 
@@ -141,30 +142,30 @@ export class TychoExecutor implements IExecutor {
       throw new Error(`Unknown emulation error: ${resp.message}`);
     }
 
-    const result = resp.output;
+    const { debug_log, ...output } = resp.output;
 
     return {
-      result: result.success
+      result: output.success
         ? {
             success: true,
-            transaction: result.transaction,
-            shardAccount: result.shard_account,
-            vmLog: result.vm_log,
-            actions: result.actions,
+            transaction: output.transaction,
+            shardAccount: output.shard_account,
+            vmLog: output.vm_log,
+            actions: output.actions,
           }
         : {
             success: false,
-            error: result.error,
+            error: output.error,
             vmResults:
-              "vm_log" in result
+              "vm_log" in output
                 ? {
-                    vmLog: result.vm_log,
-                    vmExitCode: result.vm_exit_code,
+                    vmLog: output.vm_log,
+                    vmExitCode: output.vm_exit_code,
                   }
                 : undefined,
           },
       logs: resp.logs,
-      debugLogs: "",
+      debugLogs: debug_log,
     };
   }
 

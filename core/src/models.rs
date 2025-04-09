@@ -54,6 +54,7 @@ export type RunGetMethodResponse = {
     success: true;
     stack: string;
     gas_used: string;
+    debug_log: string;
     vm_exit_code: number;
     vm_log: string;
     missing_library: string | null;
@@ -65,6 +66,7 @@ export type EmulatorSuccess = {
   success: true;
   transaction: string;
   shard_account: string;
+  debug_log: string;
   vm_log: string;
   actions: string | null;
 };
@@ -72,6 +74,7 @@ export type EmulatorSuccess = {
 export type EmulatorError = {
   success: false;
   error: string;
+  debug_log: string;
 } & (
   | {
       vm_log: string;
@@ -91,7 +94,6 @@ pub struct EmulatorParams {
     #[serde(default)]
     pub rand_seed: Option<HashBytes>,
     pub ignore_chksig: bool,
-    #[allow(unused)]
     pub debug_enabled: bool,
     #[serde(default)]
     pub is_tick_tock: bool,
@@ -174,6 +176,7 @@ pub struct RunGetMethodResponse {
     pub stack: SafeRc<Stack>,
     #[serde(with = "serde_string")]
     pub gas_used: u64,
+    pub debug_log: String,
     pub vm_exit_code: i32,
     pub vm_log: String,
     pub missing_library: Option<HashBytes>,
@@ -194,6 +197,7 @@ pub struct TxEmulatorSuccessResponse {
     pub transaction: Cell,
     #[serde(with = "BocRepr")]
     pub shard_account: ShardAccount,
+    pub debug_log: String,
     pub vm_log: String,
     #[serde(with = "Boc")]
     pub actions: Option<Cell>,
@@ -204,6 +208,7 @@ pub struct TxEmulatorErrorResponse {
     pub success: JsonBool<false>,
     pub error: String,
     pub external_not_accepted: JsonBool<true>,
+    pub debug_log: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -211,6 +216,7 @@ pub struct TxEmulatorMsgNotAcceptedResponse {
     pub success: JsonBool<false>,
     pub error: &'static str,
     pub external_not_accepted: JsonBool<true>,
+    pub debug_log: String,
     pub vm_log: String,
     pub vm_exit_code: i32,
 }

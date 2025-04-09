@@ -88,9 +88,9 @@ impl TvmEmulator {
                 ..Default::default()
             });
 
-        let mut vm_log = String::new();
+        let mut debug_log = String::new();
         if self.args.debug_enabled {
-            b = b.with_debug(&mut vm_log);
+            b = b.with_debug(&mut debug_log);
         }
 
         let mut vm = b.build();
@@ -126,7 +126,9 @@ impl TvmEmulator {
             actions,
             exit_code,
             gas_used,
-            vm_log,
+            debug_log,
+            // TODO: Somehow collect from vm tracing,
+            vm_log: String::new(),
             missing_library,
         }
     }
@@ -166,6 +168,7 @@ pub struct Answer {
     pub actions: Option<Cell>,
     pub exit_code: i32,
     pub gas_used: u64,
+    pub debug_log: String,
     pub vm_log: String,
     pub missing_library: Option<HashBytes>,
 }

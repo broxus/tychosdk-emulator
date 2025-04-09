@@ -156,6 +156,7 @@ pub fn emulate_with_emulator(
             emulator.rand_seed = rand_seed;
         }
 
+        let debug_enabled = params.debug_enabled;
         let params = tycho_executor::ExecutorParams {
             libraries,
             rand_seed: emulator.rand_seed,
@@ -170,17 +171,33 @@ pub fn emulate_with_emulator(
             full_body_in_bounced: true,
         };
 
+        let mut debug_log = String::new();
+        let mut inspector = tycho_executor::ExecutorInspector {
+            debug: debug_enabled.then_some(&mut debug_log),
+            ..Default::default()
+        };
+
         let output = match message {
-            Some((msg, _)) => tycho_executor::Executor::new(&params, &emulator.config)
-                .begin_ordinary(&address, is_external, msg, &account),
+            Some((msg_root, _)) => tycho_executor::Executor::new(&params, &emulator.config)
+                .begin_ordinary_ext(
+                    &address,
+                    is_external,
+                    msg_root,
+                    &account,
+                    Some(&mut inspector),
+                ),
             None => {
                 let ty = if is_tock {
                     TickTock::Tock
                 } else {
                     TickTock::Tick
                 };
-                tycho_executor::Executor::new(&params, &emulator.config)
-                    .begin_tick_tock(&address, ty, &account)
+                tycho_executor::Executor::new(&params, &emulator.config).begin_tick_tock_ext(
+                    &address,
+                    ty,
+                    &account,
+                    Some(&mut inspector),
+                )
             }
         };
 
@@ -194,9 +211,10 @@ pub fn emulate_with_emulator(
                         success: JsonBool,
                         error: "External message not accepted by smart contract",
                         external_not_accepted: JsonBool,
+                        // TODO: Somehow collect the log from the compute phase.
                         vm_log: String::new(),
-                        // TODO: Somehow get exit code from the execution result.
-                        vm_exit_code: 0,
+                        vm_exit_code: inspector.exit_code.unwrap_or(0),
+                        debug_log,
                     });
                 }
                 Err(e) => anyhow::bail!("Fatal executor error: {e:?}"),
@@ -208,8 +226,8 @@ pub fn emulate_with_emulator(
                 shard_account: output.new_state,
                 // TODO: Somehow collect the log from the compute phase.
                 vm_log: String::new(),
-                // TODO: Somehow collect actions from the compute phase.
-                actions: None,
+                actions: inspector.actions,
+                debug_log,
             })
         };
 
@@ -222,6 +240,7 @@ pub fn emulate_with_emulator(
                 success: JsonBool,
                 error: e.to_string(),
                 external_not_accepted: JsonBool,
+                debug_log: String::new(),
             }),
         })
         .unwrap();
@@ -280,6 +299,7 @@ pub fn run_get_method(params: &str, stack: &str, config: &str) -> js_sys::JsStri
                 success: JsonBool,
                 stack: res.stack,
                 gas_used: res.gas_used,
+                debug_log: res.debug_log,
                 vm_exit_code: res.exit_code,
                 vm_log: res.vm_log,
                 missing_library: res.missing_library,

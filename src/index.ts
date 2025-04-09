@@ -6,5 +6,5 @@ export {
 
 export { TychoExecutor } from "./executor/Executor";
 
-export { getGlocalId } from "./utils/globalId";
-export { setSignWithGlobalId } from "./utils/sign";
+export { getGlobalId } from "./utils/globalId";
+export { cryptoWithSignatureId, setSignatureId } from "./utils/sign";

@@ -1,6 +1,6 @@
 {
   "name": "@tychosdk/emulator",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Tycho transaction emulator",
   "main": "dist/index.js",
   "license": "MIT",
@@ -16,18 +16,21 @@
     "@ton/core": "^0.60.1",
     "@ton/crypto": "^3.3.0",
     "@ton/sandbox": "^0.28.0",
-    "@types/bun": "latest",
     "@types/jest": "^29.5.14",
+    "@types/node": "^18.15.11",
     "axios": "^1.8.4",
     "jest": "^29.7.0",
+    "ts-jest": "^29.0.5",
+    "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
     "zod": "^3.24.2"
   },
   "scripts": {
     "wasm:build": "./scripts/build-wasm.sh",
     "wasm:copy": "cp src/wasm/tycho_emulator_bg.wasm* ./dist/wasm/",
-    "build": "bun wasm:build && rm -rf dist && bun test && tsc && bun wasm:copy",
-    "config:pack": "bun run ./scripts/pack-config.ts"
+    "test": "yarn jest src",
+    "build": "yarn wasm:build && rm -rf dist && yarn test && tsc && yarn wasm:copy",
+    "config:pack": "ts-node ./scripts/pack-config.ts"
   },
   "peerDependencies": {
     "@ton/crypto": ">=3.3.0"
