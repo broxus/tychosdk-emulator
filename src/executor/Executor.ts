@@ -4,16 +4,22 @@ import type {
   ExecutorGetMethodResult,
   ExecutorRunTickTockArgs,
   ExecutorRunTransactionArgs,
-  ExecutorVerbosity,
   IExecutor,
 } from "@ton/sandbox";
-import { type Cell, serializeTuple } from "@ton/core";
+import { Cell, serializeTuple } from "@ton/core";
 
+import {
+  defaultConfig,
+  defaultConfigSeqno,
+  defaultGlobalId,
+} from "../config/defaultConfig";
 import type {
-  EmulationInternalParams,
-  GetMethodInternalParams,
-  ResultError,
-  ResultSuccess,
+  EmulatorParams,
+  EmulatorResponse,
+  RunGetMethodParams,
+  RunGetMethodResponse,
+  OkResponse,
+  ErrResponse,
   VersionInfo,
 } from "../wasm/tycho_emulator.js";
 import * as emulatorWasm from "../wasm/tycho_emulator.js";
@@ -21,6 +27,10 @@ import * as emulatorWasm from "../wasm/tycho_emulator.js";
 type EmulatorWasm = typeof emulatorWasm;
 
 export class TychoExecutor implements IExecutor {
+  public static defaultGlobalId: number = defaultGlobalId;
+  public static defaultConfigSeqno: number = defaultConfigSeqno;
+  public static defaultConfig: Cell = Cell.fromBase64(defaultConfig);
+
   private emulator?: {
     ptr: number;
     config: string;
@@ -37,11 +47,11 @@ export class TychoExecutor implements IExecutor {
   async runGetMethod(
     args: ExecutorGetMethodArgs
   ): Promise<ExecutorGetMethodResult> {
-    const params: GetMethodInternalParams = {
+    const params: RunGetMethodParams = {
       code: args.code.toBoc().toString("base64"),
       data: args.data.toBoc().toString("base64"),
       verbosity: 0,
-      libs: args.libs?.toBoc().toString("base64") ?? "",
+      libs: args.libs?.toBoc().toString("base64"),
       address: args.address.toString(),
       unixtime: args.unixTime,
       balance: args.balance.toString(),
@@ -60,7 +70,7 @@ export class TychoExecutor implements IExecutor {
 
     let stack = serializeTuple(args.stack);
 
-    const resp = JSON.parse(
+    const resp: OkResponse<RunGetMethodResponse> | ErrResponse = JSON.parse(
       this.module.run_get_method(
         JSON.stringify(params),
         stack.toBoc().toString("base64"),
@@ -68,22 +78,21 @@ export class TychoExecutor implements IExecutor {
       )
     );
 
-    if (resp.fail) {
-      console.error(resp);
-      throw new Error("Unknown emulation error");
+    if (resp.ok) {
+      return {
+        output: resp.output,
+        logs: resp.logs,
+        debugLogs: "",
+      };
+    } else {
+      throw new Error(`Unknown emulation error: ${resp.message}`);
     }
-
-    return {
-      output: resp.output,
-      logs: resp.logs,
-      debugLogs: "",
-    };
   }
 
   async runTickTock(
     args: ExecutorRunTickTockArgs
   ): Promise<ExecutorEmulationResult> {
-    const params: EmulationInternalParams = {
+    const params: EmulatorParams = {
       ...runCommonArgsToInternalParams(args),
       is_tick_tock: true,
       is_tock: args.which === "tock",
@@ -101,7 +110,7 @@ export class TychoExecutor implements IExecutor {
   async runTransaction(
     args: ExecutorRunTransactionArgs
   ): Promise<ExecutorEmulationResult> {
-    const params: EmulationInternalParams = runCommonArgsToInternalParams(args);
+    const params = runCommonArgsToInternalParams(args);
 
     return this.runCommon(
       this.getEmulatorPointer(args.config, 0),
@@ -124,20 +133,15 @@ export class TychoExecutor implements IExecutor {
   private runCommon(
     ...args: Parameters<typeof emulatorWasm.emulate_with_emulator>
   ): ExecutorEmulationResult {
-    const resp = JSON.parse(
+    const resp: OkResponse<EmulatorResponse> | ErrResponse = JSON.parse(
       this.module.emulate_with_emulator.apply(this, args)
     );
-    console.log(resp);
 
-    if (resp.fail) {
-      console.error(resp);
-      throw new Error("Unknown emulation error");
+    if (!resp.ok) {
+      throw new Error(`Unknown emulation error: ${resp.message}`);
     }
 
-    const logs: string = resp.logs;
-
-    const result: ResultSuccess | ResultError = resp.output;
-    console.log(result);
+    const result = resp.output;
 
     return {
       result: result.success
@@ -159,7 +163,7 @@ export class TychoExecutor implements IExecutor {
                   }
                 : undefined,
           },
-      logs,
+      logs: resp.logs,
       debugLogs: "",
     };
   }
@@ -191,25 +195,13 @@ export class TychoExecutor implements IExecutor {
 }
 
 function runCommonArgsToInternalParams(
-  args: RunCommonArgs
-): EmulationInternalParams {
+  args: ExecutorRunTransactionArgs | ExecutorRunTickTockArgs
+): EmulatorParams {
   return {
-    utime: args.now,
+    unixtime: args.now,
     lt: args.lt.toString(),
-    rand_seed: args.randomSeed === null ? "" : args.randomSeed.toString("hex"),
+    rand_seed: args.randomSeed?.toString("hex"),
     ignore_chksig: args.ignoreChksig,
     debug_enabled: args.debugEnabled,
   };
 }
-
-export type RunCommonArgs = {
-  config: string;
-  libs: Cell | null;
-  verbosity: ExecutorVerbosity;
-  shardAccount: string;
-  now: number;
-  lt: bigint;
-  randomSeed: Buffer | null;
-  ignoreChksig: boolean;
-  debugEnabled: boolean;
-};

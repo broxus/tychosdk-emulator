@@ -23,27 +23,22 @@ crate-type = ["cdylib"]
 ahash = "0.8.11"
 anyhow = "1.0"
 cfg-if = "1.0"
-getrandom = { version = "0.2", optional = true }
-js-sys = { version = "0.3.77", optional = true }
-libc = { version = "0.2", optional = true }
+getrandom = { version = "0.2", features = ["js"] }
+js-sys = "0.3.77"
 log = "0.4"
 num-bigint = "0.4"
 serde = { version = "1.0", features = ["derive"] }
-serde_json = { version = "1.0" }
-wasm-bindgen = { version = "0.2.100", optional = true }
-web-sys = { version = "0.3.77", optional = true, features = ["Performance"] }
+serde_json = "1.0"
+wasm-bindgen = "0.2.100"
+web-sys = { version = "0.3.77", features = ["Performance"] }
 
 everscale-types = { version = "0.1.2", default-features = false, features = [
     "sync",
     "serde",
     "base64",
 ] }
-tycho-executor = { git = "https://github.com/broxus/tycho-vm.git", rev = "2528426074e42f0ad7a7b9a3056f6855d356a7e3" }
-tycho-vm = { git = "https://github.com/broxus/tycho-vm.git", rev = "2528426074e42f0ad7a7b9a3056f6855d356a7e3" }
+tycho-executor = { git = "https://github.com/broxus/tycho-vm.git", rev = "682b13ab4facae752827e56dc916daaed3ba2be3" }
+tycho-vm = { git = "https://github.com/broxus/tycho-vm.git", rev = "682b13ab4facae752827e56dc916daaed3ba2be3" }
 
 [build-dependencies]
 anyhow = "1.0"
-
-[features]
-native = ["dep:libc"]
-wasm = ["dep:wasm-bindgen", "getrandom/js", "dep:web-sys", "dep:js-sys"]

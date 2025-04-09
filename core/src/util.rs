@@ -2,10 +2,24 @@ use std::borrow::Cow;
 use std::str::FromStr;
 
 use anyhow::{Context, Result};
-use everscale_types::models::{BlockchainConfigParams, SizeLimitsConfig};
+use everscale_types::models::{BlockchainConfigParams, GlobalCapability};
 use everscale_types::prelude::*;
 use serde::de::Error;
 use serde::{Deserialize, Serialize};
+
+#[cfg(target_arch = "wasm32")]
+pub fn now_sec_u64() -> u64 {
+    (js_sys::Date::now() / 1000.0) as u64
+}
+
+#[cfg(not(all(target_arch = "wasm32")))]
+pub fn now_sec_u64() -> u64 {
+    use std::time::SystemTime;
+
+    (SystemTime::now().duration_since(SystemTime::UNIX_EPOCH))
+        .unwrap()
+        .as_secs()
+}
 
 #[derive(Debug, Clone, Copy, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -33,14 +47,12 @@ pub struct ParsedConfig {
     pub params: BlockchainConfigParams,
     // TODO: Replace with VM version.
     pub version: u32,
+    pub signature_with_id: Option<i32>,
 }
 
 impl ParsedConfig {
     pub fn try_from_root(root: Cell) -> Result<Self> {
-        let mut params = BlockchainConfigParams::from_raw(root);
-        if !params.contains_raw(43)? {
-            params.set_size_limits(&DEFAULT_SIZE_LIMITS)?;
-        }
+        let params = BlockchainConfigParams::from_raw(root);
 
         // Try to unpack config to return error early.
         tycho_vm::SmcInfoTonV6::unpack_config(&params, 0)
@@ -50,25 +62,25 @@ impl ParsedConfig {
             .get_global_version()
             .context("Failed to get global version")?;
 
+        let signature_with_id = if global
+            .capabilities
+            .contains(GlobalCapability::CapSignatureWithId)
+        {
+            params
+                .get_global_id()
+                .context("Global id is mandatory (param 19)")
+                .map(Some)?
+        } else {
+            None
+        };
+
         Ok(Self {
             params,
             version: global.version,
+            signature_with_id,
         })
     }
 }
-
-static DEFAULT_SIZE_LIMITS: SizeLimitsConfig = SizeLimitsConfig {
-    max_msg_bits: 2097152,
-    max_msg_cells: 8192,
-    max_library_cells: 1000,
-    max_vm_data_depth: 512,
-    max_ext_msg_size: 65535,
-    max_ext_msg_depth: 512,
-    max_acc_state_cells: 65536,
-    max_acc_state_bits: 67043328,
-    max_acc_public_libraries: 256,
-    defer_out_queue_size_limit: 256,
-};
 
 #[derive(Default, Debug, Clone, Copy, Eq, PartialEq)]
 pub struct JsonBool<const VALUE: bool>;
@@ -83,7 +95,6 @@ impl<const VALUE: bool> serde::Serialize for JsonBool<VALUE> {
     }
 }
 
-#[allow(unused)]
 pub mod serde_extra_currencies {
     use everscale_types::models::ExtraCurrencyCollection;
     use everscale_types::num::VarUint248;
@@ -99,7 +110,7 @@ pub mod serde_extra_currencies {
         // TODO: Use unsigned here?
         #[derive(Eq, PartialEq, Hash, Deserialize)]
         #[repr(transparent)]
-        struct CurrencyId(#[serde(with = "serde_value_or_string")] i32);
+        struct CurrencyId(#[serde(with = "serde_string")] i32);
 
         #[derive(Deserialize)]
         struct Value(std::collections::HashMap<CurrencyId, VarUint248, ahash::RandomState>);
@@ -117,31 +128,6 @@ pub mod serde_extra_currencies {
     }
 }
 
-#[allow(unused)]
-pub mod serde_value_or_string {
-    use serde::Deserialize;
-
-    use super::*;
-
-    pub fn deserialize<'de, D, T>(deserializer: D) -> Result<T, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-        T: Deserialize<'de> + FromStr<Err: std::fmt::Display>,
-    {
-        #[derive(Deserialize)]
-        #[serde(untagged)]
-        enum Value<T: FromStr<Err: std::fmt::Display>> {
-            Int(T),
-            String(#[serde(with = "serde_string")] T),
-        }
-
-        Ok(match Value::deserialize(deserializer)? {
-            Value::Int(x) | Value::String(x) => x,
-        })
-    }
-}
-
-#[allow(unused)]
 pub mod serde_ton_address {
     use everscale_types::models::{StdAddr, StdAddrBase64Repr};
 
@@ -160,7 +146,6 @@ pub mod serde_ton_address {
     }
 }
 
-#[allow(unused)]
 pub mod serde_string {
     use super::*;
 
@@ -192,7 +177,7 @@ mod tests {
 
     #[test]
     fn parse_ton_config() {
-        let root = Boc::decode(include_bytes!("../res/ton_config.boc")).unwrap();
+        let root = Boc::decode(include_bytes!("../res/tycho_config.boc")).unwrap();
         let config = ParsedConfig::try_from_root(root).unwrap();
 
         for item in config.params.as_dict().keys() {

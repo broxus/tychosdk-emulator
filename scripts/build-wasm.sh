@@ -16,6 +16,6 @@ cd "$root_dir"
 # Build for both targets
 CRATE="$root_dir/core"
 WASM_DIR="$root_dir/src/wasm"
-wasm-pack build "$CRATE" --release -t nodejs -d "$WASM_DIR" --out-name "$BASE_NAME" --features wasm
+wasm-pack build "$CRATE" --release -t nodejs -d "$WASM_DIR" --out-name "$BASE_NAME"
 
 rm -rf "$WASM_DIR/package.json"

@@ -25,6 +25,7 @@ import { TychoExecutor } from "@tychosdk/emulator";
 const executor = await TychoExecutor.create();
 const blockchain = await Blockchain.create({
   executor,
+  config: TychoExecutor.defaultConfig,
 });
 
 const version = executor.getVersion();

@@ -648,7 +648,6 @@ dependencies = [
  "everscale-types",
  "getrandom",
  "js-sys",
- "libc",
  "log",
  "num-bigint",
  "serde",
@@ -662,7 +661,7 @@ dependencies = [
 [[package]]
 name = "tycho-executor"
 version = "0.1.0"
-source = "git+https://github.com/broxus/tycho-vm.git?rev=2528426074e42f0ad7a7b9a3056f6855d356a7e3#2528426074e42f0ad7a7b9a3056f6855d356a7e3"
+source = "git+https://github.com/broxus/tycho-vm.git?rev=682b13ab4facae752827e56dc916daaed3ba2be3#682b13ab4facae752827e56dc916daaed3ba2be3"
 dependencies = [
  "ahash",
  "anyhow",
@@ -675,7 +674,7 @@ dependencies = [
 [[package]]
 name = "tycho-vm"
 version = "0.1.0"
-source = "git+https://github.com/broxus/tycho-vm.git?rev=2528426074e42f0ad7a7b9a3056f6855d356a7e3#2528426074e42f0ad7a7b9a3056f6855d356a7e3"
+source = "git+https://github.com/broxus/tycho-vm.git?rev=682b13ab4facae752827e56dc916daaed3ba2be3#682b13ab4facae752827e56dc916daaed3ba2be3"
 dependencies = [
  "ahash",
  "anyhow",
@@ -696,7 +695,7 @@ dependencies = [
 [[package]]
 name = "tycho-vm-proc"
 version = "0.1.0"
-source = "git+https://github.com/broxus/tycho-vm.git?rev=2528426074e42f0ad7a7b9a3056f6855d356a7e3#2528426074e42f0ad7a7b9a3056f6855d356a7e3"
+source = "git+https://github.com/broxus/tycho-vm.git?rev=682b13ab4facae752827e56dc916daaed3ba2be3#682b13ab4facae752827e56dc916daaed3ba2be3"
 dependencies = [
  "darling",
  "proc-macro2",

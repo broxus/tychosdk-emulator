@@ -73,6 +73,8 @@ impl TvmEmulator {
             .push(SafeRc::new_dyn_value(BigInt::from(method_id)));
 
         // Prepare VM state
+        let signature_with_id = self.args.config.as_ref().and_then(|c| c.signature_with_id);
+
         let mut b = VmState::builder()
             .with_raw_stack(SafeRc::new(stack))
             .with_code(self.code.clone())
@@ -81,6 +83,7 @@ impl TvmEmulator {
             .with_libraries(&self.args.libraries)
             .with_gas(self.args.gas_params.unwrap_or_else(GasParams::getter))
             .with_modifiers(BehaviourModifiers {
+                signature_with_id,
                 chksig_always_succeed: self.args.ignore_chksig,
                 ..Default::default()
             });
@@ -145,10 +148,10 @@ impl TvmEmulator {
         }
     }
 
-    pub fn set_gas_limit(&mut self, gas_limit: i64) {
+    pub fn set_gas_limit(&mut self, gas_limit: u64) {
         self.args.gas_params = Some(GasParams {
-            max: u64::MAX, // FIXME: Use `MAX_GAS` instead?
-            limit: gas_limit as u64,
+            max: MAX_GAS,
+            limit: gas_limit,
             credit: 0,
             price: BASE_GAS_PRICE,
         });
