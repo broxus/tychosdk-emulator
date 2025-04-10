@@ -10,7 +10,8 @@ use tycho_vm::{
     SmcInfoTonV6, Stack, Tuple, VmState, VmVersion,
 };
 
-use crate::util::ParsedConfig;
+use crate::subscriber::VmLogSubscriber;
+use crate::util::{make_vm_log_mask, ParsedConfig};
 
 const MAX_GAS: u64 = 1_000_000;
 const BASE_GAS_PRICE: u64 = 1000 << 16;
@@ -22,12 +23,27 @@ pub struct TvmEmulator {
 }
 
 impl TvmEmulator {
-    pub fn new(code: Cell, data: Cell) -> Self {
+    pub fn new(code: Cell, data: Cell, verbosity: i32) -> Self {
         Self {
             code,
             data,
-            args: Default::default(),
+            args: Args {
+                verbosity,
+                ..Default::default()
+            },
         }
+    }
+
+    pub fn make_logger(&self) -> VmLogSubscriber {
+        let mut log_max_size = 256;
+        if self.args.verbosity > 4 {
+            log_max_size = 32 << 20;
+        } else if self.args.verbosity > 0 {
+            log_max_size = 1 << 20;
+        }
+
+        let mask = make_vm_log_mask(self.args.verbosity, false);
+        VmLogSubscriber::new(mask, log_max_size)
     }
 
     pub fn send_external_message(&mut self, body: Cell) -> Answer {
@@ -85,6 +101,7 @@ impl TvmEmulator {
             .with_modifiers(BehaviourModifiers {
                 signature_with_id,
                 chksig_always_succeed: self.args.ignore_chksig,
+                log_mask: make_vm_log_mask(self.args.verbosity, false),
                 ..Default::default()
             });
 
@@ -127,8 +144,6 @@ impl TvmEmulator {
             exit_code,
             gas_used,
             debug_log,
-            // TODO: Somehow collect from vm tracing,
-            vm_log: String::new(),
             missing_library,
         }
     }
@@ -169,7 +184,6 @@ pub struct Answer {
     pub exit_code: i32,
     pub gas_used: u64,
     pub debug_log: String,
-    pub vm_log: String,
     pub missing_library: Option<HashBytes>,
 }
 
@@ -183,6 +197,7 @@ pub struct Args {
     pub amount: u64,
     pub balance: u64,
     pub extra: ExtraCurrencyCollection,
+    pub verbosity: i32,
     pub debug_enabled: bool,
 
     pub address: Option<StdAddr>,

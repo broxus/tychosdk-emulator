@@ -4,6 +4,7 @@ import type {
   ExecutorGetMethodResult,
   ExecutorRunTickTockArgs,
   ExecutorRunTransactionArgs,
+  ExecutorVerbosity,
   IExecutor,
 } from "@ton/sandbox";
 import { Cell, serializeTuple } from "@ton/core";
@@ -25,6 +26,15 @@ import type {
 import * as emulatorWasm from "../wasm/tycho_emulator.js";
 
 type EmulatorWasm = typeof emulatorWasm;
+
+const verbosityToNum: Record<ExecutorVerbosity, number> = {
+  short: 0,
+  full: 1,
+  full_location: 2,
+  full_location_gas: 3,
+  full_location_stack: 4,
+  full_location_stack_verbose: 5,
+};
 
 export class TychoExecutor implements IExecutor {
   public static defaultGlobalId: number = defaultGlobalId;
@@ -50,7 +60,7 @@ export class TychoExecutor implements IExecutor {
     const params: RunGetMethodParams = {
       code: args.code.toBoc().toString("base64"),
       data: args.data.toBoc().toString("base64"),
-      verbosity: 0,
+      verbosity: verbosityToNum[args.verbosity],
       libs: args.libs?.toBoc().toString("base64"),
       address: args.address.toString(),
       unixtime: args.unixTime,
@@ -100,7 +110,7 @@ export class TychoExecutor implements IExecutor {
     };
 
     return this.runCommon(
-      this.getEmulatorPointer(args.config, 0),
+      this.getEmulatorPointer(args.config, verbosityToNum[args.verbosity]),
       args.libs?.toBoc().toString("base64"),
       args.shardAccount,
       null,
@@ -114,7 +124,7 @@ export class TychoExecutor implements IExecutor {
     const params = runCommonArgsToInternalParams(args);
 
     return this.runCommon(
-      this.getEmulatorPointer(args.config, 0),
+      this.getEmulatorPointer(args.config, verbosityToNum[args.verbosity]),
       args.libs?.toBoc().toString("base64"),
       args.shardAccount,
       args.message.toBoc().toString("base64"),
@@ -134,15 +144,15 @@ export class TychoExecutor implements IExecutor {
   private runCommon(
     ...args: Parameters<typeof emulatorWasm.emulate_with_emulator>
   ): ExecutorEmulationResult {
-    const resp: OkResponse<EmulatorResponse> | ErrResponse = JSON.parse(
+    const res: OkResponse<EmulatorResponse> | ErrResponse = JSON.parse(
       this.module.emulate_with_emulator.apply(this, args)
     );
 
-    if (!resp.ok) {
-      throw new Error(`Unknown emulation error: ${resp.message}`);
+    if (!res.ok) {
+      throw new Error(`Unknown emulation error: ${res.message}`);
     }
 
-    const { debug_log, ...output } = resp.output;
+    const { debug_log, ...output } = res.output;
 
     return {
       result: output.success
@@ -164,7 +174,7 @@ export class TychoExecutor implements IExecutor {
                   }
                 : undefined,
           },
-      logs: resp.logs,
+      logs: res.logs,
       debugLogs: debug_log,
     };
   }

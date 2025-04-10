@@ -402,6 +402,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "pin-project-lite"
+version = "0.2.16"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3b3cff922bd51709b605d9ead9aa71031d81447142d828eb4a6eba76fe619f9b"
+
+[[package]]
 name = "ppv-lite86"
 version = "0.2.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -639,11 +645,43 @@ dependencies = [
 ]
 
 [[package]]
+name = "tracing"
+version = "0.1.41"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "784e0ac535deb450455cbfa28a6f0df145ea1bb7ae51b821cf5e7927fdcfbdd0"
+dependencies = [
+ "pin-project-lite",
+ "tracing-attributes",
+ "tracing-core",
+]
+
+[[package]]
+name = "tracing-attributes"
+version = "0.1.28"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "395ae124c09f9e6918a2310af6038fba074bcf474ac352496d5910dd59a2226d"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "tracing-core"
+version = "0.1.33"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e672c95779cf947c5311f83787af4fa8fffd12fb27e4993211a84bdfd9610f9c"
+dependencies = [
+ "once_cell",
+]
+
+[[package]]
 name = "tycho-emulator"
 version = "0.1.0"
 dependencies = [
  "ahash",
  "anyhow",
+ "bumpalo",
  "cfg-if",
  "everscale-types",
  "getrandom",
@@ -652,6 +690,7 @@ dependencies = [
  "num-bigint",
  "serde",
  "serde_json",
+ "tracing",
  "tycho-executor",
  "tycho-vm",
  "wasm-bindgen",
@@ -661,7 +700,7 @@ dependencies = [
 [[package]]
 name = "tycho-executor"
 version = "0.1.0"
-source = "git+https://github.com/broxus/tycho-vm.git?rev=628abad4b4fa1806eb9ee93f2208eae9f46c3be4#628abad4b4fa1806eb9ee93f2208eae9f46c3be4"
+source = "git+https://github.com/broxus/tycho-vm.git?rev=80b117c89a425f0d1f8462c96bbf7212853f2678#80b117c89a425f0d1f8462c96bbf7212853f2678"
 dependencies = [
  "ahash",
  "anyhow",
@@ -674,7 +713,7 @@ dependencies = [
 [[package]]
 name = "tycho-vm"
 version = "0.1.0"
-source = "git+https://github.com/broxus/tycho-vm.git?rev=628abad4b4fa1806eb9ee93f2208eae9f46c3be4#628abad4b4fa1806eb9ee93f2208eae9f46c3be4"
+source = "git+https://github.com/broxus/tycho-vm.git?rev=80b117c89a425f0d1f8462c96bbf7212853f2678#80b117c89a425f0d1f8462c96bbf7212853f2678"
 dependencies = [
  "ahash",
  "anyhow",
@@ -689,13 +728,14 @@ dependencies = [
  "sha2",
  "thiserror",
  "tl-proto",
+ "tracing",
  "tycho-vm-proc",
 ]
 
 [[package]]
 name = "tycho-vm-proc"
 version = "0.1.0"
-source = "git+https://github.com/broxus/tycho-vm.git?rev=628abad4b4fa1806eb9ee93f2208eae9f46c3be4#628abad4b4fa1806eb9ee93f2208eae9f46c3be4"
+source = "git+https://github.com/broxus/tycho-vm.git?rev=80b117c89a425f0d1f8462c96bbf7212853f2678#80b117c89a425f0d1f8462c96bbf7212853f2678"
 dependencies = [
  "darling",
  "proc-macro2",

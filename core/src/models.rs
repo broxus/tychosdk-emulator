@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use tycho_vm::{SafeRc, Stack};
 use wasm_bindgen::prelude::*;
 
+use crate::subscriber::VmLogRows;
 use crate::util::{serde_extra_currencies, serde_string, serde_ton_address, JsonBool};
 
 #[wasm_bindgen(typescript_custom_section)]
@@ -169,7 +170,7 @@ impl<T: std::fmt::Display> Serialize for ErrResponse<T> {
     }
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Clone, Serialize)]
 pub struct RunGetMethodResponse {
     pub success: JsonBool<true>,
     #[serde(with = "BocRepr")]
@@ -178,11 +179,11 @@ pub struct RunGetMethodResponse {
     pub gas_used: u64,
     pub debug_log: String,
     pub vm_exit_code: i32,
-    pub vm_log: String,
+    pub vm_log: VmLogRows,
     pub missing_library: Option<HashBytes>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Clone, Serialize)]
 #[serde(untagged)]
 pub enum TxEmulatorResponse {
     Success(TxEmulatorSuccessResponse),
@@ -190,7 +191,7 @@ pub enum TxEmulatorResponse {
     NotAccepted(TxEmulatorMsgNotAcceptedResponse),
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Clone, Serialize)]
 pub struct TxEmulatorSuccessResponse {
     pub success: JsonBool<true>,
     #[serde(with = "Boc")]
@@ -198,7 +199,7 @@ pub struct TxEmulatorSuccessResponse {
     #[serde(with = "BocRepr")]
     pub shard_account: ShardAccount,
     pub debug_log: String,
-    pub vm_log: String,
+    pub vm_log: VmLogRows,
     #[serde(with = "Boc")]
     pub actions: Option<Cell>,
 }
@@ -211,12 +212,12 @@ pub struct TxEmulatorErrorResponse {
     pub debug_log: String,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Clone, Serialize)]
 pub struct TxEmulatorMsgNotAcceptedResponse {
     pub success: JsonBool<false>,
     pub error: &'static str,
     pub external_not_accepted: JsonBool<true>,
     pub debug_log: String,
-    pub vm_log: String,
+    pub vm_log: VmLogRows,
     pub vm_exit_code: i32,
 }

@@ -16,6 +16,7 @@ use self::tx_emulator::TxEmulator;
 use self::util::{now_sec_u64, JsonBool, ParsedConfig, VersionInfo};
 
 pub mod models;
+pub mod subscriber;
 pub mod tvm_emulator;
 pub mod tx_emulator;
 pub mod util;
@@ -32,10 +33,8 @@ pub fn version() -> js_sys::JsString {
 #[wasm_bindgen]
 pub fn create_emulator(config: &str, verbosity: i32) -> Result<*mut TxEmulator, JsError> {
     (|| {
-        _ = verbosity;
-
         let config = Boc::decode_base64(config)?;
-        let emulator = TxEmulator::new(BlockchainConfigParams::from_raw(config))?;
+        let emulator = TxEmulator::new(BlockchainConfigParams::from_raw(config), verbosity)?;
         Ok::<_, anyhow::Error>(Box::into_raw(Box::new(emulator)))
     })()
     .map_err(|e| JsError::new(&e.to_string()))
@@ -95,6 +94,10 @@ pub fn emulate_with_emulator(
     };
 
     (move || {
+        let subscriber = emulator.make_logger();
+        let vm_log = subscriber.state().clone();
+        let _tracing = tracing::subscriber::set_default(subscriber);
+
         // Parse accounts and messages.
         let is_tock = params.is_tock;
         let unixtime = if params.unixtime == 0 {
@@ -211,8 +214,7 @@ pub fn emulate_with_emulator(
                         success: JsonBool,
                         error: "External message not accepted by smart contract",
                         external_not_accepted: JsonBool,
-                        // TODO: Somehow collect the log from the compute phase.
-                        vm_log: String::new(),
+                        vm_log,
                         vm_exit_code: inspector.exit_code.unwrap_or(0),
                         debug_log,
                     });
@@ -224,8 +226,7 @@ pub fn emulate_with_emulator(
                 success: JsonBool,
                 transaction: output.transaction.into_inner(),
                 shard_account: output.new_state,
-                // TODO: Somehow collect the log from the compute phase.
-                vm_log: String::new(),
+                vm_log,
                 actions: inspector.actions,
                 debug_log,
             })
@@ -253,7 +254,6 @@ pub fn run_get_method(params: &str, stack: &str, config: &str) -> js_sys::JsStri
     (|| {
         let params: RunGetMethodParams =
             serde_json::from_str(params).context("Can't decode params")?;
-        _ = params.verbosity;
 
         let stack = Boc::decode_base64(stack).context("Failed to deserialize stack cell")?;
         let stack = stack
@@ -278,7 +278,12 @@ pub fn run_get_method(params: &str, stack: &str, config: &str) -> js_sys::JsStri
             None
         };
 
-        let mut emulator = TvmEmulator::new(params.code, params.data);
+        let mut emulator = TvmEmulator::new(params.code, params.data, params.verbosity);
+
+        let subscriber = emulator.make_logger();
+        let vm_log = subscriber.state().clone();
+        let _tracing = tracing::subscriber::set_default(subscriber);
+
         emulator.args.libraries = Some(Dict::from_raw(params.libs));
         emulator.args.address = Some(params.address);
         emulator.args.now = Some(params.unixtime);
@@ -301,7 +306,7 @@ pub fn run_get_method(params: &str, stack: &str, config: &str) -> js_sys::JsStri
                 gas_used: res.gas_used,
                 debug_log: res.debug_log,
                 vm_exit_code: res.exit_code,
-                vm_log: res.vm_log,
+                vm_log,
                 missing_library: res.missing_library,
             },
         })

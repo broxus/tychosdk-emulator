@@ -6,6 +6,7 @@ use everscale_types::models::{BlockchainConfigParams, GlobalCapability};
 use everscale_types::prelude::*;
 use serde::de::Error;
 use serde::{Deserialize, Serialize};
+use tycho_vm::VmLogMask;
 
 #[cfg(target_arch = "wasm32")]
 pub fn now_sec_u64() -> u64 {
@@ -80,6 +81,30 @@ impl ParsedConfig {
             signature_with_id,
         })
     }
+}
+
+pub fn make_vm_log_mask(verbosity: i32, allow_c5: bool) -> VmLogMask {
+    let mut res = VmLogMask::empty();
+    if verbosity != 0 {
+        res |= VmLogMask::MESSAGE;
+    }
+
+    if verbosity > 1 {
+        res |= VmLogMask::EXEC_LOCATION;
+        if verbosity > 2 {
+            res |= VmLogMask::GAS_REMAINING;
+            if verbosity > 3 {
+                res |= VmLogMask::DUMP_STACK;
+                if verbosity > 4 {
+                    res |= VmLogMask::DUMP_STACK_VERBOSE;
+                    if allow_c5 {
+                        res |= VmLogMask::DUMP_C5;
+                    }
+                }
+            }
+        }
+    }
+    res
 }
 
 #[derive(Default, Debug, Clone, Copy, Eq, PartialEq)]
