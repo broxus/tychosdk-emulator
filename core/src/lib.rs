@@ -1,7 +1,9 @@
 use std::sync::OnceLock;
 
 use anyhow::{Context, Result};
-use everscale_types::models::{BlockchainConfigParams, IntAddr, MsgInfo, ShardAccount, TickTock};
+use everscale_types::models::{
+    BlockchainConfigParams, IntAddr, LibDescr, MsgInfo, ShardAccount, SimpleLib, TickTock,
+};
 use everscale_types::prelude::*;
 use tycho_vm::Stack;
 use wasm_bindgen::prelude::*;
@@ -74,7 +76,7 @@ pub fn emulate_with_emulator(
 
         let libraries = if let Some(libs) = libs {
             let root = Boc::decode_base64(libs).context("Failed to deserialize libraries")?;
-            Dict::from_raw(Some(root))
+            emulator_libs_to_shard(root)?
         } else {
             Dict::new()
         };
@@ -284,7 +286,7 @@ pub fn run_get_method(params: &str, stack: &str, config: &str) -> js_sys::JsStri
         let vm_log = subscriber.state().clone();
         let _tracing = tracing::subscriber::set_default(subscriber);
 
-        emulator.args.libraries = Some(Dict::from_raw(params.libs));
+        emulator.args.libraries = params.libs.map(emulator_libs_to_simple).transpose()?;
         emulator.args.address = Some(params.address);
         emulator.args.now = Some(params.unixtime);
         emulator.args.balance = params.balance;
@@ -321,4 +323,41 @@ pub fn run_get_method(params: &str, stack: &str, config: &str) -> js_sys::JsStri
 
         JsValue::from(value).unchecked_into()
     })
+}
+
+fn emulator_libs_to_shard(libs_root: Cell) -> Result<Dict<HashBytes, LibDescr>> {
+    thread_local! {
+        static COMMON_PUBLISHER: Dict<HashBytes, ()> = {
+            let mut dict = Dict::new();
+            dict.set(HashBytes::ZERO, ()).unwrap();
+            dict
+        };
+    }
+
+    COMMON_PUBLISHER.with(|publishers| {
+        let libs = Dict::<HashBytes, Cell>::from_raw(Some(libs_root));
+
+        let mut items = Vec::new();
+        for item in libs.iter() {
+            let (hash, lib) = item.context("Invalid libraries dict")?;
+            items.push((hash, LibDescr {
+                lib,
+                publishers: publishers.clone(),
+            }));
+        }
+
+        Dict::try_from_sorted_slice(&items).context("Failed to repack libraries dict")
+    })
+}
+
+fn emulator_libs_to_simple(libs_root: Cell) -> Result<Dict<HashBytes, SimpleLib>> {
+    let libs = Dict::<HashBytes, Cell>::from_raw(Some(libs_root));
+
+    let mut items = Vec::new();
+    for item in libs.iter() {
+        let (hash, root) = item.context("Invalid libraries dict")?;
+        items.push((hash, SimpleLib { root, public: true }));
+    }
+
+    Dict::try_from_sorted_slice(&items).context("Failed to repack libraries dict")
 }
