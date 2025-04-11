@@ -1,6 +1,7 @@
+use anyhow::{Context, Result};
 use everscale_types::models::{
-    CurrencyCollection, ExtInMsgInfo, ExtraCurrencyCollection, IntMsgInfo, MsgInfo, OwnedMessage,
-    SimpleLib, StdAddr,
+    BlockchainConfigParams, CurrencyCollection, ExtInMsgInfo, ExtraCurrencyCollection,
+    GlobalCapability, IntMsgInfo, MsgInfo, OwnedMessage, SimpleLib, StdAddr,
 };
 use everscale_types::num::Tokens;
 use everscale_types::prelude::*;
@@ -11,7 +12,7 @@ use tycho_vm::{
 };
 
 use crate::subscriber::VmLogSubscriber;
-use crate::util::{make_vm_log_mask, ParsedConfig};
+use crate::util::make_vm_log_mask;
 
 const MAX_GAS: u64 = 1_000_000;
 const BASE_GAS_PRICE: u64 = 1000 << 16;
@@ -341,5 +342,70 @@ impl Args {
         self.address
             .clone()
             .unwrap_or_else(|| StdAddr::new(0, HashBytes::ZERO))
+    }
+}
+
+#[derive(Clone)]
+pub struct ParsedConfig {
+    pub params: BlockchainConfigParams,
+    // TODO: Replace with VM version.
+    pub version: u32,
+    pub signature_with_id: Option<i32>,
+}
+
+impl ParsedConfig {
+    pub fn try_from_root(root: Cell) -> Result<Self> {
+        let params = BlockchainConfigParams::from_raw(root);
+
+        // Try to unpack config to return error early.
+        tycho_vm::SmcInfoTonV6::unpack_config(&params, 0)
+            .context("Failed to unpack config params")?;
+
+        let global = params
+            .get_global_version()
+            .context("Failed to get global version")?;
+
+        let signature_with_id = if global
+            .capabilities
+            .contains(GlobalCapability::CapSignatureWithId)
+        {
+            params
+                .get_global_id()
+                .context("Global id is mandatory (param 19)")
+                .map(Some)?
+        } else {
+            None
+        };
+
+        Ok(Self {
+            params,
+            version: global.version,
+            signature_with_id,
+        })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_tycho_config() {
+        let root = Boc::decode(include_bytes!("../res/tycho_config.boc")).unwrap();
+        let config = ParsedConfig::try_from_root(root).unwrap();
+
+        for item in config.params.as_dict().keys() {
+            item.unwrap();
+        }
+    }
+
+    #[test]
+    fn parse_ton_config() {
+        let root = Boc::decode(include_bytes!("../res/ton_config.boc")).unwrap();
+        let config = ParsedConfig::try_from_root(root).unwrap();
+
+        for item in config.params.as_dict().keys() {
+            item.unwrap();
+        }
     }
 }

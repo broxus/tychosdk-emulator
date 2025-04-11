@@ -22,6 +22,9 @@ export type EmulatorParams = {
   debug_enabled: boolean;
   is_tick_tock?: boolean;
   is_tock?: boolean;
+  disable_delete_frozen_accounts?: boolean;
+  charge_action_fees_on_fail?: boolean;
+  full_body_in_bounced?: boolean;
 };
 
 export type RunGetMethodParams = {
@@ -100,6 +103,12 @@ pub struct EmulatorParams {
     pub is_tick_tock: bool,
     #[serde(default)]
     pub is_tock: bool,
+    #[serde(default)]
+    pub disable_delete_frozen_accounts: Option<bool>,
+    #[serde(default)]
+    pub charge_action_fees_on_fail: Option<bool>,
+    #[serde(default)]
+    pub full_body_in_bounced: Option<bool>,
 }
 
 #[derive(Deserialize)]
@@ -128,6 +137,13 @@ pub struct RunGetMethodParams {
 }
 
 // === Responses ===
+
+#[derive(Debug, Clone, Copy, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VersionInfo {
+    pub emulator_lib_commit_hash: &'static str,
+    pub emulator_lib_commit_date: &'static str,
+}
 
 #[repr(transparent)]
 pub struct OkResponse<T> {

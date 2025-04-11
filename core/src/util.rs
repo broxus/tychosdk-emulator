@@ -1,11 +1,9 @@
 use std::borrow::Cow;
 use std::str::FromStr;
 
-use anyhow::{Context, Result};
-use everscale_types::models::{BlockchainConfigParams, GlobalCapability};
-use everscale_types::prelude::*;
+use anyhow::Result;
 use serde::de::Error;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use tycho_vm::VmLogMask;
 
 #[cfg(target_arch = "wasm32")]
@@ -20,67 +18,6 @@ pub fn now_sec_u64() -> u64 {
     (SystemTime::now().duration_since(SystemTime::UNIX_EPOCH))
         .unwrap()
         .as_secs()
-}
-
-#[derive(Debug, Clone, Copy, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct VersionInfo {
-    pub emulator_lib_commit_hash: &'static str,
-    pub emulator_lib_commit_date: &'static str,
-}
-
-impl VersionInfo {
-    pub fn current() -> &'static Self {
-        static CURRENT: VersionInfo = VersionInfo {
-            emulator_lib_commit_hash: EMULATOR_COMMIT_HASH,
-            emulator_lib_commit_date: EMULATOR_COMMIT_DATE,
-        };
-
-        &CURRENT
-    }
-}
-
-static EMULATOR_COMMIT_HASH: &str = env!("EMULATOR_COMMIT_HASH");
-static EMULATOR_COMMIT_DATE: &str = env!("EMULATOR_COMMIT_DATE");
-
-#[derive(Clone)]
-pub struct ParsedConfig {
-    pub params: BlockchainConfigParams,
-    // TODO: Replace with VM version.
-    pub version: u32,
-    pub signature_with_id: Option<i32>,
-}
-
-impl ParsedConfig {
-    pub fn try_from_root(root: Cell) -> Result<Self> {
-        let params = BlockchainConfigParams::from_raw(root);
-
-        // Try to unpack config to return error early.
-        tycho_vm::SmcInfoTonV6::unpack_config(&params, 0)
-            .context("Failed to unpack config params")?;
-
-        let global = params
-            .get_global_version()
-            .context("Failed to get global version")?;
-
-        let signature_with_id = if global
-            .capabilities
-            .contains(GlobalCapability::CapSignatureWithId)
-        {
-            params
-                .get_global_id()
-                .context("Global id is mandatory (param 19)")
-                .map(Some)?
-        } else {
-            None
-        };
-
-        Ok(Self {
-            params,
-            version: global.version,
-            signature_with_id,
-        })
-    }
 }
 
 pub fn make_vm_log_mask(verbosity: i32, allow_c5: bool) -> VmLogMask {
@@ -195,18 +132,3 @@ pub mod serde_string {
 #[derive(Deserialize)]
 #[repr(transparent)]
 pub struct BorrowedStr<'a>(#[serde(borrow)] pub Cow<'a, str>);
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn parse_ton_config() {
-        let root = Boc::decode(include_bytes!("../res/tycho_config.boc")).unwrap();
-        let config = ParsedConfig::try_from_root(root).unwrap();
-
-        for item in config.params.as_dict().keys() {
-            item.unwrap();
-        }
-    }
-}

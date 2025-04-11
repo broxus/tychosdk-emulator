@@ -36,6 +36,30 @@ const verbosityToNum: Record<ExecutorVerbosity, number> = {
   full_location_stack_verbose: 5,
 };
 
+export type TychoExecutorParams = {
+  /**
+   * Whether accounts are allowed to stay frozen even with a big enough
+   * storage due to be deleted.
+   *
+   * @default true
+   */
+  disableDeleteFrozenAccounts?: boolean;
+  /**
+   * Charge account for total action fees in addition to action fine
+   * on failed actions or state commit errors.
+   *
+   * @default true
+   */
+  chargeActionFeesOnFail?: boolean;
+  /**
+   * Whether to add a full inbound message body cell to
+   * the bounced message body.
+   *
+   * @default true
+   */
+  fullBodyInBounced?: boolean;
+};
+
 export class TychoExecutor implements IExecutor {
   public static defaultGlobalId: number = defaultGlobalId;
   public static defaultConfigSeqno: number = defaultConfigSeqno;
@@ -47,10 +71,13 @@ export class TychoExecutor implements IExecutor {
     verbosity: number;
   };
 
-  constructor(private module: EmulatorWasm) {}
+  constructor(
+    private module: EmulatorWasm,
+    private executorParams: TychoExecutorParams
+  ) {}
 
-  static async create() {
-    const ex = new TychoExecutor(emulatorWasm);
+  static async create(params: TychoExecutorParams = {}) {
+    const ex = new TychoExecutor(emulatorWasm, params);
     return ex;
   }
 
@@ -104,7 +131,7 @@ export class TychoExecutor implements IExecutor {
     args: ExecutorRunTickTockArgs
   ): Promise<ExecutorEmulationResult> {
     const params: EmulatorParams = {
-      ...runCommonArgsToInternalParams(args),
+      ...runCommonArgsToInternalParams(args, this.executorParams),
       is_tick_tock: true,
       is_tock: args.which === "tock",
     };
@@ -121,7 +148,7 @@ export class TychoExecutor implements IExecutor {
   async runTransaction(
     args: ExecutorRunTransactionArgs
   ): Promise<ExecutorEmulationResult> {
-    const params = runCommonArgsToInternalParams(args);
+    const params = runCommonArgsToInternalParams(args, this.executorParams);
 
     return this.runCommon(
       this.getEmulatorPointer(args.config, verbosityToNum[args.verbosity]),
@@ -206,7 +233,8 @@ export class TychoExecutor implements IExecutor {
 }
 
 function runCommonArgsToInternalParams(
-  args: ExecutorRunTransactionArgs | ExecutorRunTickTockArgs
+  args: ExecutorRunTransactionArgs | ExecutorRunTickTockArgs,
+  executorParams: TychoExecutorParams
 ): EmulatorParams {
   return {
     unixtime: args.now,
@@ -214,5 +242,8 @@ function runCommonArgsToInternalParams(
     rand_seed: args.randomSeed?.toString("hex"),
     ignore_chksig: args.ignoreChksig,
     debug_enabled: args.debugEnabled,
+    disable_delete_frozen_accounts: executorParams.disableDeleteFrozenAccounts,
+    charge_action_fees_on_fail: executorParams.chargeActionFeesOnFail,
+    full_body_in_bounced: executorParams.fullBodyInBounced,
   };
 }

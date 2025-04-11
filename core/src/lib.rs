@@ -11,11 +11,11 @@ use wasm_bindgen::prelude::*;
 use self::models::{
     EmulatorParams, ErrResponse, OkResponse, RunGetMethodParams, RunGetMethodResponse,
     TxEmulatorErrorResponse, TxEmulatorMsgNotAcceptedResponse, TxEmulatorResponse,
-    TxEmulatorSuccessResponse,
+    TxEmulatorSuccessResponse, VersionInfo,
 };
 use self::tvm_emulator::TvmEmulator;
 use self::tx_emulator::TxEmulator;
-use self::util::{now_sec_u64, JsonBool, ParsedConfig, VersionInfo};
+use self::util::{now_sec_u64, JsonBool};
 
 pub mod models;
 pub mod subscriber;
@@ -23,12 +23,21 @@ pub mod tvm_emulator;
 pub mod tx_emulator;
 pub mod util;
 
+static EMULATOR_COMMIT_HASH: &str = env!("EMULATOR_COMMIT_HASH");
+static EMULATOR_COMMIT_DATE: &str = env!("EMULATOR_COMMIT_DATE");
+
 // === Exported Methods ===
 
 #[wasm_bindgen]
 pub fn version() -> js_sys::JsString {
     static RESPONSE: OnceLock<String> = OnceLock::new();
-    let info = RESPONSE.get_or_init(|| serde_json::to_string(VersionInfo::current()).unwrap());
+    let info = RESPONSE.get_or_init(|| {
+        serde_json::to_string(&VersionInfo {
+            emulator_lib_commit_hash: EMULATOR_COMMIT_HASH,
+            emulator_lib_commit_date: EMULATOR_COMMIT_DATE,
+        })
+        .unwrap()
+    });
     JsValue::from_str(info.as_str()).unchecked_into()
 }
 
@@ -171,9 +180,9 @@ pub fn emulate_with_emulator(
                 chksig_always_succeed: params.ignore_chksig,
                 ..emulator.vm_modifiers
             },
-            disable_delete_frozen_accounts: true,
-            charge_action_fees_on_fail: true,
-            full_body_in_bounced: true,
+            disable_delete_frozen_accounts: params.disable_delete_frozen_accounts.unwrap_or(true),
+            charge_action_fees_on_fail: params.charge_action_fees_on_fail.unwrap_or(true),
+            full_body_in_bounced: params.full_body_in_bounced.unwrap_or(true),
         };
 
         let mut debug_log = String::new();
@@ -263,7 +272,8 @@ pub fn run_get_method(params: &str, stack: &str, config: &str) -> js_sys::JsStri
             .context("Failed to deserialize stack")?;
 
         let config = Boc::decode_base64(config).context("Failed to deserialize config cell")?;
-        let config = ParsedConfig::try_from_root(config).context("Failed to deserialize config")?;
+        let config = tvm_emulator::ParsedConfig::try_from_root(config)
+            .context("Failed to deserialize config")?;
 
         let prev_blocks = if let Some(prev_blocks) = params.prev_blocks_info {
             let info_value = Stack::load_stack_value_from_cell(prev_blocks.as_ref())
