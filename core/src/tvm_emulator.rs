@@ -126,7 +126,7 @@ impl TvmEmulator {
         let code = self.code.clone();
         let mut data = self.data.clone();
         if accepted {
-            if let Some(commited) = vm.commited_state.take() {
+            if let Some(commited) = vm.committed_state.take() {
                 data = commited.c4;
                 actions = Some(commited.c5);
             }
@@ -276,11 +276,6 @@ impl Args {
     }
 
     fn build_stack(&self, message_amount: u64, message_body: Cell, selector: i32) -> Stack {
-        let body_cs = (
-            message_body.clone(),
-            CellSliceRange::full(message_body.as_ref()),
-        );
-
         Stack {
             items: tuple![
                 int if self.balance > 0 {
@@ -294,14 +289,12 @@ impl Args {
                 } else {
                     self.build_external_message(message_body.clone())
                 },
-                slice body_cs,
+                slice CellSliceParts::from(message_body),
             ],
         }
     }
 
     fn build_internal_message(&self, amount: u64, body: Cell) -> Cell {
-        let body_range = CellSliceRange::full(body.as_ref());
-
         CellBuilder::build_from(OwnedMessage {
             info: MsgInfo::Int(IntMsgInfo {
                 ihr_disabled: true,
@@ -316,15 +309,13 @@ impl Args {
                 created_at: 0,
             }),
             init: None,
-            body: (body, body_range),
+            body: body.into(),
             layout: None,
         })
         .unwrap()
     }
 
     fn build_external_message(&self, body: Cell) -> Cell {
-        let body_range = CellSliceRange::full(body.as_ref());
-
         CellBuilder::build_from(OwnedMessage {
             info: MsgInfo::ExtIn(ExtInMsgInfo {
                 src: None,
@@ -332,7 +323,7 @@ impl Args {
                 import_fee: Tokens::ZERO,
             }),
             init: None,
-            body: (body, body_range),
+            body: body.into(),
             layout: None,
         })
         .unwrap()

@@ -213,7 +213,7 @@ dependencies = [
 [[package]]
 name = "everscale-types"
 version = "0.1.2"
-source = "git+https://github.com/broxus/everscale-types.git?rev=97424951abb3ec9ea0f1a3e24095eac14096f939#97424951abb3ec9ea0f1a3e24095eac14096f939"
+source = "git+https://github.com/broxus/everscale-types.git?rev=82c343b2bd17ceb51db0575b6b8ee821ccda037e#82c343b2bd17ceb51db0575b6b8ee821ccda037e"
 dependencies = [
  "ahash",
  "base64",
@@ -234,7 +234,7 @@ dependencies = [
 [[package]]
 name = "everscale-types-proc"
 version = "0.1.5"
-source = "git+https://github.com/broxus/everscale-types.git?rev=97424951abb3ec9ea0f1a3e24095eac14096f939#97424951abb3ec9ea0f1a3e24095eac14096f939"
+source = "git+https://github.com/broxus/everscale-types.git?rev=82c343b2bd17ceb51db0575b6b8ee821ccda037e#82c343b2bd17ceb51db0575b6b8ee821ccda037e"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -700,7 +700,7 @@ dependencies = [
 [[package]]
 name = "tycho-executor"
 version = "0.1.0"
-source = "git+https://github.com/broxus/tycho-vm.git?rev=80b117c89a425f0d1f8462c96bbf7212853f2678#80b117c89a425f0d1f8462c96bbf7212853f2678"
+source = "git+https://github.com/broxus/tycho-vm.git?rev=c14396b3b479d8cf394f99449aa52b8b4caa1d06#c14396b3b479d8cf394f99449aa52b8b4caa1d06"
 dependencies = [
  "ahash",
  "anyhow",
@@ -713,7 +713,7 @@ dependencies = [
 [[package]]
 name = "tycho-vm"
 version = "0.1.0"
-source = "git+https://github.com/broxus/tycho-vm.git?rev=80b117c89a425f0d1f8462c96bbf7212853f2678#80b117c89a425f0d1f8462c96bbf7212853f2678"
+source = "git+https://github.com/broxus/tycho-vm.git?rev=c14396b3b479d8cf394f99449aa52b8b4caa1d06#c14396b3b479d8cf394f99449aa52b8b4caa1d06"
 dependencies = [
  "ahash",
  "anyhow",
@@ -735,7 +735,7 @@ dependencies = [
 [[package]]
 name = "tycho-vm-proc"
 version = "0.1.0"
-source = "git+https://github.com/broxus/tycho-vm.git?rev=80b117c89a425f0d1f8462c96bbf7212853f2678#80b117c89a425f0d1f8462c96bbf7212853f2678"
+source = "git+https://github.com/broxus/tycho-vm.git?rev=c14396b3b479d8cf394f99449aa52b8b4caa1d06#c14396b3b479d8cf394f99449aa52b8b4caa1d06"
 dependencies = [
  "darling",
  "proc-macro2",
