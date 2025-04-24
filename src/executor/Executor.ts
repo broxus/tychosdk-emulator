@@ -58,6 +58,12 @@ export type TychoExecutorParams = {
    * @default true
    */
   fullBodyInBounced?: boolean;
+  /**
+   * New strict and more predictable extra currency behaviour.
+   *
+   * @default true
+   */
+  strictExtraCurrency?: boolean;
 };
 
 export class TychoExecutor implements IExecutor {
@@ -245,5 +251,6 @@ function runCommonArgsToInternalParams(
     disable_delete_frozen_accounts: executorParams.disableDeleteFrozenAccounts,
     charge_action_fees_on_fail: executorParams.chargeActionFeesOnFail,
     full_body_in_bounced: executorParams.fullBodyInBounced,
+    strict_extra_currency: executorParams.strictExtraCurrency,
   };
 }

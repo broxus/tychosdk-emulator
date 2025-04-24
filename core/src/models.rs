@@ -25,6 +25,7 @@ export type EmulatorParams = {
   disable_delete_frozen_accounts?: boolean;
   charge_action_fees_on_fail?: boolean;
   full_body_in_bounced?: boolean;
+  strict_extra_currency?: boolean;
 };
 
 export type RunGetMethodParams = {
@@ -109,6 +110,8 @@ pub struct EmulatorParams {
     pub charge_action_fees_on_fail: Option<bool>,
     #[serde(default)]
     pub full_body_in_bounced: Option<bool>,
+    #[serde(default)]
+    pub strict_extra_currency: Option<bool>,
 }
 
 #[derive(Deserialize)]
