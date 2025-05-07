@@ -3,4 +3,4 @@ resolver = "2"
 members = ["core"]
 
 [patch.crates-io]
-everscale-types = { git = "https://github.com/broxus/everscale-types.git", rev = "b55da379aba126d4496c88bc7b8cc7af553ab37a" }
+everscale-types = { git = "https://github.com/broxus/everscale-types.git", rev = "fee2eb43c3cbd0c5180a6d4c359e5bb415fb9d72" }

@@ -1,6 +1,6 @@
 {
   "name": "@tychosdk/emulator",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "Tycho transaction emulator",
   "main": "dist/index.js",
   "license": "MIT",

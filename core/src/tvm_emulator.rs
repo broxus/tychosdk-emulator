@@ -269,11 +269,12 @@ impl Args {
             b = b.with_unpacked_config(unpacked_config);
         }
 
-        if global_version < 9 {
+        if global_version < 11 {
             return Box::new(b);
         }
 
-        Box::new(b.require_ton_v9())
+        let b = b.require_ton_v11().with_unpacked_in_msg(None);
+        Box::new(b)
     }
 
     fn build_stack(&self, message_amount: u64, message_body: Cell, selector: i32) -> Stack {
