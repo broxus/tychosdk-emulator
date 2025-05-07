@@ -99,6 +99,7 @@ impl TvmEmulator {
             .with_smc_info(self.args.build_smc_info(self.code.clone()))
             .with_libraries(&self.args.libraries)
             .with_gas(self.args.gas_params.unwrap_or_else(GasParams::getter))
+            .with_init_selector(false)
             .with_modifiers(BehaviourModifiers {
                 signature_with_id,
                 chksig_always_succeed: self.args.ignore_chksig,
