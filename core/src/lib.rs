@@ -194,6 +194,7 @@ pub fn emulate_with_emulator(
 
         let output = match message {
             Some((msg_root, _)) => tycho_executor::Executor::new(&params, &emulator.config)
+                .with_min_lt(params.block_lt)
                 .begin_ordinary_ext(
                     &address,
                     is_external,
@@ -207,12 +208,9 @@ pub fn emulate_with_emulator(
                 } else {
                     TickTock::Tick
                 };
-                tycho_executor::Executor::new(&params, &emulator.config).begin_tick_tock_ext(
-                    &address,
-                    ty,
-                    &account,
-                    Some(&mut inspector),
-                )
+                tycho_executor::Executor::new(&params, &emulator.config)
+                    .with_min_lt(params.block_lt)
+                    .begin_tick_tock_ext(&address, ty, &account, Some(&mut inspector))
             }
         };
 
