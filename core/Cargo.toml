@@ -39,10 +39,10 @@ everscale-types = { version = "0.1.2", default-features = false, features = [
     "serde",
     "base64",
 ] }
-tycho-executor = { git = "https://github.com/broxus/tycho-vm.git", rev = "c224351e576375430f4a2d66207406998d189946" }
+tycho-executor = { git = "https://github.com/broxus/tycho-vm.git", rev = "d4b045c42f82bdea7884c61e44ff9759d4ea9c60" }
 tycho-vm = { git = "https://github.com/broxus/tycho-vm.git", features = [
     "tracing",
-], rev = "c224351e576375430f4a2d66207406998d189946" }
+], rev = "d4b045c42f82bdea7884c61e44ff9759d4ea9c60" }
 
 [build-dependencies]
 anyhow = "1.0"
