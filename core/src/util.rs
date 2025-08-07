@@ -2,8 +2,8 @@ use std::borrow::Cow;
 use std::str::FromStr;
 
 use anyhow::Result;
-use serde::de::Error;
 use serde::Deserialize;
+use serde::de::Error;
 use tycho_vm::VmLogMask;
 
 #[cfg(target_arch = "wasm32")]
@@ -58,8 +58,8 @@ impl<const VALUE: bool> serde::Serialize for JsonBool<VALUE> {
 }
 
 pub mod serde_extra_currencies {
-    use everscale_types::models::ExtraCurrencyCollection;
-    use everscale_types::num::VarUint248;
+    use tycho_types::models::ExtraCurrencyCollection;
+    use tycho_types::num::VarUint248;
 
     use super::*;
 
@@ -91,7 +91,7 @@ pub mod serde_extra_currencies {
 }
 
 pub mod serde_ton_address {
-    use everscale_types::models::{StdAddr, StdAddrBase64Repr};
+    use tycho_types::models::{StdAddr, StdAddrBase64Repr};
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<StdAddr, D::Error>
     where

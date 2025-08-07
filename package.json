@@ -1,6 +1,6 @@
 {
   "name": "@tychosdk/emulator",
-  "version": "0.1.15",
+  "version": "0.2.0",
   "description": "Tycho transaction emulator",
   "main": "dist/index.js",
   "license": "MIT",
@@ -13,13 +13,14 @@
     "url": "git+https://github.com/broxus/tycho-emulator.git"
   },
   "devDependencies": {
-    "@ton/core": "^0.60.1",
+    "@ton/core": "^0.61.0",
     "@ton/crypto": "^3.3.0",
-    "@ton/sandbox": "^0.28.0",
-    "@types/jest": "^29.5.14",
+    "@ton/sandbox": "^0.36.0",
+    "@ton/test-utils": "0.10.0",
+    "@types/jest": "^30.0.0",
     "@types/node": "^18.15.11",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.0.5",
+    "jest": "^30.0.5",
+    "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
@@ -32,7 +33,7 @@
   },
   "scripts": {
     "wasm:build": "./scripts/build-wasm.sh",
-    "wasm:copy": "cp src/wasm/tycho_emulator_bg.wasm* ./dist/wasm/",
+    "wasm:copy": "mkdir -p dist && cp src/wasm/tycho_emulator_bg.wasm* ./dist/wasm/",
     "test": "yarn jest src",
     "build": "yarn wasm:build && rm -rf dist && yarn test && tsc && yarn wasm:copy",
     "config:pack": "ts-node ./scripts/pack-config.ts"

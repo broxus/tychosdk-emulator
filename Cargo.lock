@@ -4,22 +4,22 @@ version = 4
 
 [[package]]
 name = "ahash"
-version = "0.8.11"
+version = "0.8.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e89da841a80418a9b391ebaea17f5c112ffaaa96f621d2c285b5174da76b9011"
+checksum = "5a15f179cd60c4584b8a8c596927aadc462e27f2ca70c04e0071964a73ba7a75"
 dependencies = [
  "cfg-if",
  "getrandom",
  "once_cell",
  "version_check",
- "zerocopy 0.7.35",
+ "zerocopy",
 ]
 
 [[package]]
 name = "anyhow"
-version = "1.0.97"
+version = "1.0.98"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dcfed56ad506cb2c684a14971b8861fdc3baaaae314b9e5f9bb532cbe3ba7a4f"
+checksum = "e16d2d3311acee920a9eb8d33b8cbc1787ce4a264e85f964c2404b969bdcd487"
 
 [[package]]
 name = "autocfg"
@@ -59,9 +59,9 @@ dependencies = [
 
 [[package]]
 name = "bumpalo"
-version = "3.17.0"
+version = "3.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1628fb46dfa0b37568d12e5edd512553eccf6a22a78e8bde00bb4aed84d5bdbf"
+checksum = "46c5e41b57b8bba42a04676d81cb89e9ee8e859a1a66f80a5a72e1cb76b34d43"
 
 [[package]]
 name = "bytes"
@@ -71,9 +71,9 @@ checksum = "d71b6127be86fdcfddb610f7182ac57211d4b18a3e9c82eb2d17662f2227ad6a"
 
 [[package]]
 name = "cfg-if"
-version = "1.0.0"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
+checksum = "9555578bc9e57714c812a1f84e4fc5b4d21fcb063490c624de019f7464c91268"
 
 [[package]]
 name = "cpufeatures"
@@ -146,9 +146,9 @@ dependencies = [
 
 [[package]]
 name = "darling"
-version = "0.20.11"
+version = "0.21.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc7f46116c46ff9ab3eb1597a45688b6715c6e628b5c133e288e709a29bcb4ee"
+checksum = "d6b136475da5ef7b6ac596c0e956e37bad51b85b987ff3d5e230e964936736b2"
 dependencies = [
  "darling_core",
  "darling_macro",
@@ -156,9 +156,9 @@ dependencies = [
 
 [[package]]
 name = "darling_core"
-version = "0.20.11"
+version = "0.21.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d00b9596d185e565c2207a0b01f8bd1a135483d02d9b7b0a54b11da8d53412e"
+checksum = "b44ad32f92b75fb438b04b68547e521a548be8acc339a6dacc4a7121488f53e6"
 dependencies = [
  "fnv",
  "ident_case",
@@ -170,9 +170,9 @@ dependencies = [
 
 [[package]]
 name = "darling_macro"
-version = "0.20.11"
+version = "0.21.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc34b93ccb385b40dc71c6fceac4b2ad23662c7eeb248cf10d529b7e055b6ead"
+checksum = "2b5be8a7a562d315a5b92a630c30cec6bcf663e6673f00fbb69cca66a6f521b9"
 dependencies = [
  "darling_core",
  "quote",
@@ -195,53 +195,6 @@ name = "dyn-clone"
 version = "1.0.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1c7a8fb8a9fbf66c1f703fe16184d10ca0ee9d23be5b4436400408ba54a95005"
-
-[[package]]
-name = "everscale-crypto"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0da807f69d3d795921a2aaf4bd9b449e3d280d28b104e4909890a50c40a33950"
-dependencies = [
- "curve25519-dalek",
- "generic-array",
- "hex",
- "rand",
- "sha2",
- "tl-proto",
-]
-
-[[package]]
-name = "everscale-types"
-version = "0.1.2"
-source = "git+https://github.com/broxus/everscale-types.git?rev=fee2eb43c3cbd0c5180a6d4c359e5bb415fb9d72#fee2eb43c3cbd0c5180a6d4c359e5bb415fb9d72"
-dependencies = [
- "ahash",
- "base64",
- "bitflags",
- "crc32c",
- "everscale-crypto",
- "everscale-types-proc",
- "hex",
- "num-bigint",
- "num-traits",
- "scc",
- "serde",
- "sha2",
- "smallvec",
- "thiserror",
- "tl-proto",
- "typeid",
-]
-
-[[package]]
-name = "everscale-types-proc"
-version = "0.1.5"
-source = "git+https://github.com/broxus/everscale-types.git?rev=fee2eb43c3cbd0c5180a6d4c359e5bb415fb9d72#fee2eb43c3cbd0c5180a6d4c359e5bb415fb9d72"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
 
 [[package]]
 name = "fiat-crypto"
@@ -267,13 +220,14 @@ dependencies = [
 
 [[package]]
 name = "getrandom"
-version = "0.2.15"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c4567c8db10ae91089c99af84c68c38da3ec2f087c3f82960bcdbf3656b6f4d7"
+checksum = "26145e563e54f2cadc477553f1ec5ee650b00862f0a58bcd12cbdc5f0ea2d2f4"
 dependencies = [
  "cfg-if",
  "js-sys",
  "libc",
+ "r-efi",
  "wasi",
  "wasm-bindgen",
 ]
@@ -314,9 +268,9 @@ checksum = "c19937216e9d3aa9956d9bb8dfc0b0c8beb6058fc4f7a4dc4d850edf86a237d6"
 
 [[package]]
 name = "log"
-version = "0.4.26"
+version = "0.4.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "30bde2b3dc3671ae49d8e2e9f044c7c005836e7a023ee57cffa25ab82764bb9e"
+checksum = "13dc2df351e3202783a1fe0d44375f7295ffb4049267b0f3018346dc122a1d94"
 
 [[package]]
 name = "memchr"
@@ -410,15 +364,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3b3cff922bd51709b605d9ead9aa71031d81447142d828eb4a6eba76fe619f9b"
 
 [[package]]
-name = "ppv-lite86"
-version = "0.2.21"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "85eae3c4ed2f50dcfe72643da4befc30deadb458a9b590d720cde2f2b1e97da9"
-dependencies = [
- "zerocopy 0.8.23",
-]
-
-[[package]]
 name = "proc-macro2"
 version = "1.0.94"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -437,34 +382,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "rand"
-version = "0.8.5"
+name = "r-efi"
+version = "5.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34af8d1a0e25924bc5b7c43c079c942339d8f0a8b57c39049bef581b46327404"
-dependencies = [
- "libc",
- "rand_chacha",
- "rand_core",
-]
-
-[[package]]
-name = "rand_chacha"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e6c10a63a0fa32252be49d21e7709d4d4baf8d231c2dbce1eaa8141b9b127d88"
-dependencies = [
- "ppv-lite86",
- "rand_core",
-]
-
-[[package]]
-name = "rand_core"
-version = "0.6.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
-dependencies = [
- "getrandom",
-]
+checksum = "69cdb34c158ceb288df11e18b4bd39de994f6657d83847bdffdbd7f346754b0f"
 
 [[package]]
 name = "rustc-hash"
@@ -678,14 +599,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "tycho-crypto"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5dc575bf266a635aed302ac1f42c405693b06eb2750648b195c762bc01546530"
+dependencies = [
+ "curve25519-dalek",
+ "generic-array",
+ "hex",
+ "sha2",
+ "tl-proto",
+]
+
+[[package]]
 name = "tycho-emulator"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "ahash",
  "anyhow",
  "bumpalo",
  "cfg-if",
- "everscale-types",
  "getrandom",
  "js-sys",
  "log",
@@ -694,6 +627,7 @@ dependencies = [
  "serde_json",
  "tracing",
  "tycho-executor",
+ "tycho-types",
  "tycho-vm",
  "wasm-bindgen",
  "web-sys",
@@ -701,29 +635,60 @@ dependencies = [
 
 [[package]]
 name = "tycho-executor"
-version = "0.1.0"
-source = "git+https://github.com/broxus/tycho-vm.git?rev=d4b045c42f82bdea7884c61e44ff9759d4ea9c60#d4b045c42f82bdea7884c61e44ff9759d4ea9c60"
+version = "0.2.0"
+source = "git+https://github.com/broxus/tycho-vm.git?rev=56a3019f961ed2bd38271b04750da35ebc0a7681#56a3019f961ed2bd38271b04750da35ebc0a7681"
 dependencies = [
  "ahash",
  "anyhow",
- "everscale-types",
  "num-bigint",
  "thiserror",
+ "tycho-types",
  "tycho-vm",
 ]
 
 [[package]]
+name = "tycho-types"
+version = "0.2.1"
+source = "git+https://github.com/broxus/everscale-types.git?rev=a7996bc99cdc2b909d2fb8660aa4b6dd54638971#a7996bc99cdc2b909d2fb8660aa4b6dd54638971"
+dependencies = [
+ "ahash",
+ "base64",
+ "bitflags",
+ "crc32c",
+ "hex",
+ "num-bigint",
+ "num-traits",
+ "scc",
+ "serde",
+ "sha2",
+ "smallvec",
+ "thiserror",
+ "tl-proto",
+ "tycho-crypto",
+ "tycho-types-proc",
+ "typeid",
+]
+
+[[package]]
+name = "tycho-types-proc"
+version = "0.2.0"
+source = "git+https://github.com/broxus/everscale-types.git?rev=a7996bc99cdc2b909d2fb8660aa4b6dd54638971#a7996bc99cdc2b909d2fb8660aa4b6dd54638971"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "tycho-vm"
-version = "0.1.0"
-source = "git+https://github.com/broxus/tycho-vm.git?rev=d4b045c42f82bdea7884c61e44ff9759d4ea9c60#d4b045c42f82bdea7884c61e44ff9759d4ea9c60"
+version = "0.2.0"
+source = "git+https://github.com/broxus/tycho-vm.git?rev=56a3019f961ed2bd38271b04750da35ebc0a7681#56a3019f961ed2bd38271b04750da35ebc0a7681"
 dependencies = [
  "ahash",
  "anyhow",
  "bitflags",
  "blake2",
  "dyn-clone",
- "everscale-crypto",
- "everscale-types",
  "num-bigint",
  "num-integer",
  "num-traits",
@@ -731,13 +696,15 @@ dependencies = [
  "thiserror",
  "tl-proto",
  "tracing",
+ "tycho-crypto",
+ "tycho-types",
  "tycho-vm-proc",
 ]
 
 [[package]]
 name = "tycho-vm-proc"
-version = "0.1.0"
-source = "git+https://github.com/broxus/tycho-vm.git?rev=d4b045c42f82bdea7884c61e44ff9759d4ea9c60#d4b045c42f82bdea7884c61e44ff9759d4ea9c60"
+version = "0.2.0"
+source = "git+https://github.com/broxus/tycho-vm.git?rev=56a3019f961ed2bd38271b04750da35ebc0a7681#56a3019f961ed2bd38271b04750da35ebc0a7681"
 dependencies = [
  "darling",
  "proc-macro2",
@@ -777,9 +744,12 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 
 [[package]]
 name = "wasi"
-version = "0.11.0+wasi-snapshot-preview1"
+version = "0.14.2+wasi-0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
+checksum = "9683f9a5a998d873c0d21fcbe3c083009670149a8fab228644b8bd36b2c48cb3"
+dependencies = [
+ "wit-bindgen-rt",
+]
 
 [[package]]
 name = "wasm-bindgen"
@@ -850,39 +820,28 @@ dependencies = [
 ]
 
 [[package]]
-name = "zerocopy"
-version = "0.7.35"
+name = "wit-bindgen-rt"
+version = "0.39.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b9b4fd18abc82b8136838da5d50bae7bdea537c574d8dc1a34ed098d6c166f0"
+checksum = "6f42320e61fe2cfd34354ecb597f86f413484a798ba44a8ca1165c58d42da6c1"
 dependencies = [
- "zerocopy-derive 0.7.35",
+ "bitflags",
 ]
 
 [[package]]
 name = "zerocopy"
-version = "0.8.23"
+version = "0.8.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd97444d05a4328b90e75e503a34bad781f14e28a823ad3557f0750df1ebcbc6"
+checksum = "1039dd0d3c310cf05de012d8a39ff557cb0d23087fd44cad61df08fc31907a2f"
 dependencies = [
- "zerocopy-derive 0.8.23",
+ "zerocopy-derive",
 ]
 
 [[package]]
 name = "zerocopy-derive"
-version = "0.7.35"
+version = "0.8.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fa4f8080344d4671fb4e831a13ad1e68092748387dfc4f55e356242fae12ce3e"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "zerocopy-derive"
-version = "0.8.23"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6352c01d0edd5db859a63e2605f4ea3183ddbd15e2c4a9e7d32184df75e4f154"
+checksum = "9ecf5b4cc5364572d7f4c329661bcc82724222973f2cab6f050a4e5c22f75181"
 dependencies = [
  "proc-macro2",
  "quote",

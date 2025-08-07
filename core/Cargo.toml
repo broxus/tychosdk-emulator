@@ -3,8 +3,8 @@ name = "tycho-emulator"
 description = "A Tycho executor emulator."
 repository = "https://github.com/broxus/tycho-emulator"
 authors = ["Ivan Kalinin <i.kalinin@dexpa.io>"]
-version = "0.1.0"
-edition = "2021"
+version = "0.2.0"
+edition = "2024"
 license = "MIT OR Apache-2.0"
 
 [package.metadata.wasm-pack.profile.release]
@@ -20,11 +20,11 @@ omit-default-module-path = false
 crate-type = ["cdylib"]
 
 [dependencies]
-ahash = "0.8.11"
+ahash = "0.8.12"
 anyhow = "1.0"
 bumpalo = { version = "3.17", default-features = false }
 cfg-if = "1.0"
-getrandom = { version = "0.2", features = ["js"] }
+getrandom = { version = "0.3.3", features = ["wasm_js"] }
 js-sys = "0.3.77"
 log = "0.4"
 num-bigint = "0.4"
@@ -34,15 +34,15 @@ tracing = { version = "0.1", features = ["std"] }
 wasm-bindgen = "0.2.100"
 web-sys = { version = "0.3.77", features = ["Performance"] }
 
-everscale-types = { version = "0.1.2", default-features = false, features = [
+tycho-types = { version = "0.2.1", default-features = false, features = [
     "sync",
     "serde",
     "base64",
 ] }
-tycho-executor = { git = "https://github.com/broxus/tycho-vm.git", rev = "d4b045c42f82bdea7884c61e44ff9759d4ea9c60" }
+tycho-executor = { git = "https://github.com/broxus/tycho-vm.git", rev = "56a3019f961ed2bd38271b04750da35ebc0a7681" }
 tycho-vm = { git = "https://github.com/broxus/tycho-vm.git", features = [
     "tracing",
-], rev = "d4b045c42f82bdea7884c61e44ff9759d4ea9c60" }
+], rev = "56a3019f961ed2bd38271b04750da35ebc0a7681" }
 
 [build-dependencies]
 anyhow = "1.0"

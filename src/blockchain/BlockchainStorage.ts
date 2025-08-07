@@ -30,8 +30,8 @@ export class TychoRemoteBlockchainStorage implements BlockchainStorage {
               used: {
                 cells: 0n,
                 bits: 0n,
-                publicCells: 0n,
               },
+              storageExtra: null,
               lastPaid: 0,
               duePayment: null,
             },

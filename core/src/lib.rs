@@ -1,10 +1,10 @@
 use std::sync::OnceLock;
 
 use anyhow::{Context, Result};
-use everscale_types::models::{
+use tycho_types::models::{
     BlockchainConfigParams, IntAddr, LibDescr, MsgInfo, ShardAccount, SimpleLib, TickTock,
 };
-use everscale_types::prelude::*;
+use tycho_types::prelude::*;
 use tycho_vm::Stack;
 use wasm_bindgen::prelude::*;
 
@@ -15,7 +15,7 @@ use self::models::{
 };
 use self::tvm_emulator::TvmEmulator;
 use self::tx_emulator::TxEmulator;
-use self::util::{now_sec_u64, JsonBool};
+use self::util::{JsonBool, now_sec_u64};
 
 pub mod models;
 pub mod subscriber;

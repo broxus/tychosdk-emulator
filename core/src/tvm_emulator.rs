@@ -1,14 +1,14 @@
 use anyhow::{Context, Result};
-use everscale_types::models::{
+use num_bigint::BigInt;
+use tycho_types::models::{
     BlockchainConfigParams, CurrencyCollection, ExtInMsgInfo, ExtraCurrencyCollection,
     GlobalCapability, IntMsgInfo, MsgInfo, OwnedMessage, SimpleLib, StdAddr,
 };
-use everscale_types::num::Tokens;
-use everscale_types::prelude::*;
-use num_bigint::BigInt;
+use tycho_types::num::Tokens;
+use tycho_types::prelude::*;
 use tycho_vm::{
-    tuple, BehaviourModifiers, CustomSmcInfo, GasParams, SafeRc, SmcInfo, SmcInfoBase,
-    SmcInfoTonV6, Stack, Tuple, VmState, VmVersion,
+    BehaviourModifiers, CustomSmcInfo, GasParams, SafeRc, SmcInfo, SmcInfoBase, SmcInfoTonV6,
+    Stack, Tuple, VmState, VmVersion, tuple,
 };
 
 use crate::subscriber::VmLogSubscriber;
@@ -126,11 +126,9 @@ impl TvmEmulator {
 
         let code = self.code.clone();
         let mut data = self.data.clone();
-        if accepted {
-            if let Some(commited) = vm.committed_state.take() {
-                data = commited.c4;
-                actions = Some(commited.c5);
-            }
+        if accepted && let Some(commited) = vm.committed_state.take() {
+            data = commited.c4;
+            actions = Some(commited.c5);
         }
 
         let missing_library = vm.gas.missing_library();

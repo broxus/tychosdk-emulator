@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
-use everscale_types::cell::HashBytes;
-use everscale_types::models::{
+use tycho_types::cell::HashBytes;
+use tycho_types::models::{
     BlockchainConfig, BlockchainConfigParams, ConfigParam0, GlobalCapability, SizeLimitsConfig,
 };
 
@@ -88,7 +88,7 @@ static DEFAULT_SIZE_LIMITS: SizeLimitsConfig = SizeLimitsConfig {
 
 #[cfg(test)]
 mod tests {
-    use everscale_types::prelude::*;
+    use tycho_types::prelude::*;
 
     use super::*;
 

@@ -10,4 +10,4 @@ codegen-units = 1
 opt-level = 3
 
 [patch.crates-io]
-everscale-types = { git = "https://github.com/broxus/everscale-types.git", rev = "fee2eb43c3cbd0c5180a6d4c359e5bb415fb9d72" }
+tycho-types = { git = "https://github.com/broxus/everscale-types.git", rev = "a7996bc99cdc2b909d2fb8660aa4b6dd54638971" }

@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 use std::num::NonZeroU64;
 use std::sync::{Arc, Mutex};
 
-use tracing::{span, Subscriber};
+use tracing::{Subscriber, span};
 use tycho_vm::VmLogMask;
 
 const VM_TARGET: &str = "tycho_vm";
@@ -133,13 +133,12 @@ impl Inner {
     fn get_buffer(&mut self) -> String {
         const OK_LEN: usize = 128;
 
-        if self.rows.len() >= self.capacity {
-            if let Some(mut s) = self.rows.pop_front() {
-                if s.len() <= OK_LEN {
-                    s.clear();
-                    return s;
-                }
-            }
+        if self.rows.len() >= self.capacity
+            && let Some(mut s) = self.rows.pop_front()
+            && s.len() <= OK_LEN
+        {
+            s.clear();
+            return s;
         }
 
         String::new()

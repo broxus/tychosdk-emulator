@@ -1,11 +1,11 @@
-use everscale_types::models::{ExtraCurrencyCollection, ShardAccount, StdAddr};
-use everscale_types::prelude::*;
 use serde::{Deserialize, Serialize};
+use tycho_types::models::{ExtraCurrencyCollection, ShardAccount, StdAddr};
+use tycho_types::prelude::*;
 use tycho_vm::{SafeRc, Stack};
 use wasm_bindgen::prelude::*;
 
 use crate::subscriber::VmLogRows;
-use crate::util::{serde_extra_currencies, serde_string, serde_ton_address, JsonBool};
+use crate::util::{JsonBool, serde_extra_currencies, serde_string, serde_ton_address};
 
 #[wasm_bindgen(typescript_custom_section)]
 const TYPES: &str = r###"
