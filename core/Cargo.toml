@@ -3,7 +3,7 @@ name = "tycho-emulator"
 description = "A Tycho executor emulator."
 repository = "https://github.com/broxus/tycho-emulator"
 authors = ["Ivan Kalinin <i.kalinin@dexpa.io>"]
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 
@@ -39,10 +39,10 @@ tycho-types = { version = "0.2.1", default-features = false, features = [
     "serde",
     "base64",
 ] }
-tycho-executor = { git = "https://github.com/broxus/tycho-vm.git", rev = "56a3019f961ed2bd38271b04750da35ebc0a7681" }
+tycho-executor = { git = "https://github.com/broxus/tycho-vm.git", rev = "53f1e8b55b85f21fd42148a738d72292fbd9a839" }
 tycho-vm = { git = "https://github.com/broxus/tycho-vm.git", features = [
     "tracing",
-], rev = "56a3019f961ed2bd38271b04750da35ebc0a7681" }
+], rev = "53f1e8b55b85f21fd42148a738d72292fbd9a839" }
 
 [build-dependencies]
 anyhow = "1.0"

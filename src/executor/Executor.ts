@@ -64,6 +64,12 @@ export type TychoExecutorParams = {
    * @default true
    */
   strictExtraCurrency?: boolean;
+  /**
+   * Whether authority marks logic is enabled.
+   *
+   * @default false
+   */
+  authorityMarks?: boolean;
 };
 
 export class TychoExecutor implements IExecutor {
@@ -252,5 +258,6 @@ function runCommonArgsToInternalParams(
     charge_action_fees_on_fail: executorParams.chargeActionFeesOnFail,
     full_body_in_bounced: executorParams.fullBodyInBounced,
     strict_extra_currency: executorParams.strictExtraCurrency,
+    authority_marks_enabled: executorParams.authorityMarks,
   };
 }

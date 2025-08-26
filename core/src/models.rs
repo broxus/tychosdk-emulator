@@ -26,6 +26,7 @@ export type EmulatorParams = {
   charge_action_fees_on_fail?: boolean;
   full_body_in_bounced?: boolean;
   strict_extra_currency?: boolean;
+  authority_marks_enabled?: boolean;
 };
 
 export type RunGetMethodParams = {
@@ -112,6 +113,8 @@ pub struct EmulatorParams {
     pub full_body_in_bounced: Option<bool>,
     #[serde(default)]
     pub strict_extra_currency: Option<bool>,
+    #[serde(default)]
+    pub authority_marks_enabled: Option<bool>,
 }
 
 #[derive(Deserialize)]

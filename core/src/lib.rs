@@ -184,6 +184,7 @@ pub fn emulate_with_emulator(
             charge_action_fees_on_fail: params.charge_action_fees_on_fail.unwrap_or(true),
             full_body_in_bounced: params.full_body_in_bounced.unwrap_or(true),
             strict_extra_currency: params.strict_extra_currency.unwrap_or(true),
+            authority_marks_enabled: params.authority_marks_enabled.unwrap_or(false),
         };
 
         let mut debug_log = String::new();
