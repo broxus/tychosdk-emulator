@@ -1,6 +1,6 @@
 {
   "name": "@tychosdk/emulator",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Tycho transaction emulator",
   "main": "dist/index.js",
   "license": "MIT",
@@ -29,7 +29,9 @@
     "zod": "^3.24.2"
   },
   "peerDependencies": {
-    "@ton/crypto": ">=3.3.0"
+    "@ton/core": ">=0.61.0",
+    "@ton/crypto": ">=3.3.0",
+    "@ton/sandbox": ">=0.36.0"
   },
   "scripts": {
     "wasm:build": "./scripts/build-wasm.sh",
