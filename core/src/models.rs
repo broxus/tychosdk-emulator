@@ -2,12 +2,12 @@ use serde::{Deserialize, Serialize};
 use tycho_types::models::{ExtraCurrencyCollection, ShardAccount, StdAddr};
 use tycho_types::prelude::*;
 use tycho_vm::{SafeRc, Stack};
-use wasm_bindgen::prelude::*;
 
 use crate::subscriber::VmLogRows;
 use crate::util::{JsonBool, serde_extra_currencies, serde_string, serde_ton_address};
 
-#[wasm_bindgen(typescript_custom_section)]
+#[cfg(feature = "wasm")]
+#[wasm_bindgen::prelude::wasm_bindgen(typescript_custom_section)]
 const TYPES: &str = r###"
 export type VersionInfo = {
   emulatorLibCommitHash: string;
@@ -242,4 +242,44 @@ pub struct TxEmulatorMsgNotAcceptedResponse {
     pub debug_log: String,
     pub vm_log: VmLogRows,
     pub vm_exit_code: i32,
+}
+
+#[cfg(feature = "native")]
+#[derive(Clone, Serialize)]
+pub struct TvmEmulatorSendMessageResponse {
+    pub success: JsonBool<true>,
+    #[serde(with = "serde_string")]
+    pub gas_used: u64,
+    pub vm_exit_code: i32,
+    pub accepted: bool,
+    pub vm_log: VmLogRows,
+    pub missing_library: Option<HashBytes>,
+    #[serde(with = "Boc")]
+    pub actions: Option<Cell>,
+    #[serde(with = "Boc")]
+    pub new_code: Cell,
+    #[serde(with = "Boc")]
+    pub new_data: Cell,
+}
+
+#[cfg(feature = "native")]
+#[derive(Debug, Clone, Copy)]
+pub struct TvmEmulatorErrorResponse<'a> {
+    pub error: &'a str,
+}
+
+#[cfg(feature = "native")]
+impl Serialize for TvmEmulatorErrorResponse<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+
+        let mut s = serializer.serialize_struct("TvmEmulatorErrorResponse", 3)?;
+        s.serialize_field("success", &false)?;
+        s.serialize_field("error", self.error)?;
+        s.serialize_field("external_not_accepted", &false)?;
+        s.end()
+    }
 }

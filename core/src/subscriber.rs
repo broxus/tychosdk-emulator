@@ -100,7 +100,7 @@ impl tracing::field::Visit for LogVisitor<'_> {
     }
 }
 
-#[derive(Clone)]
+#[derive(Default, Clone)]
 pub struct VmLogRows {
     inner: Arc<Mutex<Inner>>,
 }
@@ -124,6 +124,7 @@ impl std::fmt::Display for VmLogRows {
     }
 }
 
+#[derive(Default)]
 struct Inner {
     capacity: usize,
     rows: VecDeque<String>,
