@@ -2,9 +2,11 @@
 /target
 /.vscode
 /.idea
+/.cache
 
 /**/pkg
 /**/pkg-node
 
 /node_modules
 /dist
+/build

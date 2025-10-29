@@ -32,6 +32,23 @@ const version = executor.getVersion();
 console.log("Version:", version);
 ```
 
+## Native Bindings
+
+To build the shared library:
+
+```bash
+cargo build --no-default-features --features native --release
+```
+
+The resuling library will be at `./target/release/libtycho_emulator.so`
+
+To build shared library tests:
+```bash
+mkdir -p build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release ../examples/native
+make example && ./example
+```
+
 ## Development
 
 ### @tychosdk/emulator
