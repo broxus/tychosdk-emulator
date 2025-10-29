@@ -857,9 +857,27 @@ unsafe fn parse_hash(hash_str: *const c_char) -> Result<HashBytes> {
 }
 
 /// Allocates a new C-string with `malloc`.
+#[cfg(unix)]
 fn make_c_str(str: &str) -> *mut c_char {
     // SAFETY: `str` is not null and its len is in `isize::MAX` bounds.
     unsafe { libc::strndup(str.as_ptr().cast(), str.len()) }
+}
+
+/// Allocates a new C-string with `malloc`.
+#[cfg(windows)]
+fn make_c_str(str: &str) -> *mut c_char {
+    // SAFETY: `str` is not null and its len is in `isize::MAX` bounds.
+    unsafe {
+        let len = str.len();
+        let result = libc::malloc(len + 1).cast::<c_char>();
+
+        if !result.is_null() {
+            std::ptr::copy_nonoverlapping(str.as_ptr().cast(), result, len);
+            result.add(len).write(0);
+        }
+
+        result
+    }
 }
 
 #[cfg(test)]
