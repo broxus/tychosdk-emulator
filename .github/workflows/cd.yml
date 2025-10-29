@@ -1,0 +1,240 @@
+# This workflow builds the binaries, which are released when a "v*" tag is pushed.
+# This workflow only runs on a push to master and when pushing a version-tag.
+#
+# The Linux builds are performed on a "manylinux" container. This container
+# is designed such that that the resulting binary has minimal dependencies on system
+# libraries, and thus works on as many linuxes as possible. It's a thing from the
+# Python world, but generally useful.
+#
+# Each target (operating system + architecture) is built in grouped jobs by operating system.
+#
+# Each job should specify at least these env vars:
+# * TARGET: used in makefile to do cargo build --target $TARGET
+# * ARCHIVE_NAME: used by the makefile to package things up
+# * TYCHO_EMULATOR_VERSION: is backed into the binary at compile time
+#
+# See https://doc.rust-lang.org/nightly/rustc/platform-support.html for Rust build targets.
+
+name: CD
+
+env:
+  CACHE_SUFFIX: a
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+    branches: [master]
+
+jobs:
+  # -----
+  linux:
+    # Config
+    name: release - ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - name: linux-x86_64
+            target: x86_64-unknown-linux-gnu
+            image: manylinux_2_28_x86_64
+          - name: linux-aarch64
+            target: aarch64-unknown-linux-gnu
+            image: manylinux_2_28_aarch64
+    env:
+      TARGET: ${{ matrix.target }}
+      ARCHIVE_NAME: tycho-emulator-${{ matrix.name }}
+      TOOLCHAIN: stable-${{ matrix.target }}
+      IMAGE: ${{ matrix.image }}
+    steps:
+      # Common part (same for nearly each build)
+      - uses: actions/checkout@v5
+        with:
+          submodules: true
+      - name: Set TYCHO_EMULATOR_VERSION
+        run: echo "TYCHO_EMULATOR_VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+        shell: bash
+      # prepare qemu for cross-compilation
+      - name: Set up QEMU
+        if: matrix.image == 'manylinux_2_28_aarch64'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+      # Build
+      - name: Build
+        run: |
+          CID=$(docker create -t -w /tmp/tycho-emulator -v $PWD:/tmp/src:ro -e TARGET -e ARCHIVE_NAME -e TYCHO_EMULATOR_VERSION quay.io/pypa/$IMAGE bash -c "\
+            cp -r /tmp/src/. . && \
+            rm -rf ./dist && \
+            export PATH=/root/.cargo/bin:\$PATH && \
+            export USER=root && \
+            curl --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain none && \
+            rustup toolchain install --no-self-update $TOOLCHAIN && \
+            rustup default $TOOLCHAIN && \
+            cargo build --release --no-default-features --features native")
+          docker start -ai $CID
+          export ARCHIVEDIR="dist/toarchive"
+          mkdir -p "$ARCHIVEDIR/include/emulator"
+          mkdir -p "$ARCHIVEDIR/lib"
+          docker cp $CID:/tmp/tycho-emulator/ffi/emulator.h $ARCHIVEDIR/include/emulator/.
+          docker cp $CID:/tmp/tycho-emulator/target/release/libtycho_emulator.so $ARCHIVEDIR/lib/.
+          docker cp $CID:/tmp/tycho-emulator/target/release/libtycho_emulator.a $ARCHIVEDIR/lib/.
+          docker rm $CID
+          cd "$ARCHIVEDIR"
+          zip -r "../${ARCHIVE_NAME}.zip" *
+
+      # Upload (same for each build)
+      - name: Upload
+        uses: actions/upload-artifact@v5
+        with:
+          path: dist
+          name: ${{ env.ARCHIVE_NAME }}
+
+  # -----
+  windows:
+    # Config
+    name: release - ${{ matrix.name }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - name:  windows-x86_64 - MSVC
+            target: x86_64-pc-windows-msvc
+            archive-name: windows-x86_64-msvc
+            toolchain: stable-msvc
+    env:
+      TARGET: ${{ matrix.target }}
+      ARCHIVE_NAME: tycho-emulator-${{ matrix.archive-name }}
+    steps:
+      # Common part (same for each build)
+      - uses: actions/checkout@v5
+        with:
+          submodules: true
+      - name: Set TYCHO_EMULATOR_VERSION
+        run: echo "TYCHO_EMULATOR_VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+        shell: bash
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          targets: ${{ env.TARGET }}
+      - name: Setup caching
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: build-${{ env.TARGET }}-${{ env.CACHE_SUFFIX }}
+      # Build
+      - name: Build
+        run: |
+          cargo build --release --no-default-features --features native
+          export ARCHIVEDIR="dist/toarchive"
+          mkdir -p "$ARCHIVEDIR/include/emulator"
+          mkdir -p "$ARCHIVEDIR/lib"
+          cp ./ffi/emulator.h                        "$ARCHIVEDIR/include/emulator"
+          cp ./target/release/tycho_emulator.dll     "$ARCHIVEDIR/lib"
+          cp ./target/release/tycho_emulator.lib     "$ARCHIVEDIR/lib"
+          cp ./target/release/tycho_emulator.dll.lib "$ARCHIVEDIR/lib"
+          cp ./target/release/tycho_emulator.pdb     "$ARCHIVEDIR/lib"
+          cd "$ARCHIVEDIR"
+          7z a -tzip "../${ARCHIVE_NAME}.zip" *
+        shell: bash
+      # Upload (same for each build)
+      - name: Upload
+        uses: actions/upload-artifact@v5
+        with:
+          path: dist
+          name: ${{ env.ARCHIVE_NAME }}
+
+  # -----
+  macos:
+    # Config
+    name: release - ${{ matrix.name }}
+    runs-on: macos-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - name:  macos-aarch64
+            target: aarch64-apple-darwin
+            archive-name: macos-aarch64
+    env:
+      TARGET: ${{ matrix.target }}
+      ARCHIVE_NAME: tycho-emulator-${{ matrix.archive-name }}
+      MACOSX_DEPLOYMENT_TARGET: "10.13"
+      RUSTFLAGS: "-C link-args=-Wl,-install_name,@rpath/libtycho_emulator.dylib"
+    steps:
+      # Common part (same for each build)
+      - uses: actions/checkout@v5
+        with:
+          submodules: true
+      - name: Set TYCHO_EMULATOR_VERSION
+        run: echo "TYCHO_EMULATOR_VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+        shell: bash
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ env.TARGET }}
+      - name: Setup caching
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: build-${{ env.TARGET }}-${{ env.CACHE_SUFFIX }}
+      # Build
+      - name: Build
+        run: |
+          cargo build --release --no-default-features --features native
+          export ARCHIVEDIR="dist/toarchive"
+          mkdir -p "$ARCHIVEDIR/include/emulator"
+          mkdir -p "$ARCHIVEDIR/lib"
+          cp ./ffi/emulator.h                         "$ARCHIVEDIR/include/emulator"
+          cp ./target/release/libtycho_emulator.dylib "$ARCHIVEDIR/lib"
+          cp ./target/release/libtycho_emulator.a     "$ARCHIVEDIR/lib"
+          cd "$ARCHIVEDIR"
+          zip -r "../${ARCHIVE_NAME}.zip" *
+      # Upload (same for each build)
+      - name: Upload
+        uses: actions/upload-artifact@v5
+        with:
+          path: dist
+          name: ${{ env.ARCHIVE_NAME }}
+
+  # Create a Github release and upload the binary libs that we just built.
+  # There should be a release and debug build for each platform, plus a file containing the commit sha.
+  publish:
+    name: Publish Github release
+    needs:
+      - linux
+      - windows
+      - macos
+    runs-on: ubuntu-latest
+    if: success() && contains(github.ref, 'tags/v')
+    steps:
+      - uses: actions/checkout@v5
+      - name: set version (which gets used as release name)
+        run: |
+          echo "TYCHO_EMULATOR_VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+        shell: bash
+      - name: Download assets
+        uses: actions/download-artifact@v6
+        with:
+          path: dist
+      - name: Create commit-sha file
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          echo $GITHUB_SHA > dist/commit-sha
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TYCHO_EMULATOR_VERSION }}
+          name: ${{ env.TYCHO_EMULATOR_VERSION }}
+          files: |
+            dist/**/*.zip
+            dist/commit-sha
+          body: |
+            Autogenerated binary modules.
+            The Linux builds are built on AlmaLinux 8 [manylinux_2_28](https://github.com/pypa/manylinux#manylinux).
+            The MacOS builds target MacOS 10.13 High Sierra and up.
+            The Windows builds are built using MSVC on all architectures and GNU on x64.
+          draft: false
+          prerelease: false

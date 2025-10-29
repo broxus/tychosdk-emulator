@@ -17,7 +17,7 @@ dwarf-debug-info = false
 omit-default-module-path = false
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
 ahash = "0.8.12"
