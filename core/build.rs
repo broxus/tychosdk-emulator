@@ -1,5 +1,3 @@
-use std::os::unix::ffi::OsStringExt;
-
 use anyhow::Result;
 
 fn main() -> Result<()> {
@@ -22,7 +20,13 @@ fn get_git_info() -> Result<GitInfo> {
     let pkg_dir = std::path::PathBuf::from(env("CARGO_MANIFEST_DIR")?);
     let git_dir = command("git", &["rev-parse", "--git-dir"], Some(pkg_dir));
     let git_dir = match git_dir {
-        Ok(git_dir) => std::path::PathBuf::from(std::ffi::OsString::from_vec(git_dir)),
+        #[cfg(unix)]
+        Ok(git_dir) => {
+            use std::os::unix::ffi::OsStringExt;
+            std::path::PathBuf::from(std::ffi::OsString::from_vec(git_dir))
+        }
+        #[cfg(windows)]
+        Ok(git_dir) => std::path::PathBuf::from(String::from_utf8_lossy(&git_dir).into_owned()),
         Err(msg) => {
             println!("cargo:warning=unable to determine git version (not in git repository?)");
             println!("cargo:warning={msg}");
