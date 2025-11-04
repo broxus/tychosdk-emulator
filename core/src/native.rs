@@ -613,6 +613,8 @@ impl TxEmulatorExt {
             full_body_in_bounced: true,
             strict_extra_currency: true,
             authority_marks_enabled: true,
+            // Will be overwritten
+            prev_mc_block_id: None,
         }
     }
 

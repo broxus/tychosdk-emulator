@@ -38,10 +38,10 @@ tycho-types = { version = "0.3.0", default-features = false, features = [
     "serde",
     "base64",
 ] }
-tycho-executor = { git = "https://github.com/broxus/tycho-vm.git", rev = "56a7eb8e6854087881eb3ff269b4d8b8663458a5" }
+tycho-executor = { git = "https://github.com/broxus/tycho-vm.git" }
 tycho-vm = { git = "https://github.com/broxus/tycho-vm.git", features = [
     "tracing",
-], rev = "56a7eb8e6854087881eb3ff269b4d8b8663458a5" }
+]}
 
 [build-dependencies]
 anyhow = "1.0"

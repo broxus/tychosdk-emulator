@@ -27,6 +27,7 @@ export type EmulatorParams = {
   full_body_in_bounced?: boolean;
   strict_extra_currency?: boolean;
   authority_marks_enabled?: boolean;
+  prev_blocks_info?: string;
 };
 
 export type RunGetMethodParams = {
@@ -115,6 +116,8 @@ pub struct EmulatorParams {
     pub strict_extra_currency: Option<bool>,
     #[serde(default)]
     pub authority_marks_enabled: Option<bool>,
+    #[serde(default, with = "Boc")]
+    pub prev_blocks_info: Option<Cell>,
 }
 
 #[derive(Deserialize)]
