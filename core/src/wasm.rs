@@ -64,7 +64,7 @@ pub fn emulate_with_emulator(
     params: &str,
 ) -> js_sys::JsString {
     // Parse input params.
-    let (emulator, params, libraries) = match (|| {
+    let (emulator, params, libraries, mut prev_blocks_info) = match (|| {
         anyhow::ensure!(!emulator.is_null(), "emulator pointer is null");
         let emulator = unsafe { &mut *emulator };
 
@@ -82,7 +82,9 @@ pub fn emulate_with_emulator(
             Dict::new()
         };
 
-        Ok((emulator, params, libraries))
+        let prev_blocks = parse_prev_blocks_info(params.prev_blocks_info.as_ref())?;
+
+        Ok((emulator, params, libraries, prev_blocks))
     })() {
         // Parsed input params.
         Ok(res) => res,
@@ -168,6 +170,8 @@ pub fn emulate_with_emulator(
             rand_seed: emulator.rand_seed,
             block_unixtime: unixtime,
             block_lt: params.lt,
+            // Will be overwritten by custom hook
+            prev_mc_block_id: None,
             vm_modifiers: tycho_vm::BehaviourModifiers {
                 chksig_always_succeed: params.ignore_chksig,
                 ..emulator.vm_modifiers
@@ -180,8 +184,13 @@ pub fn emulate_with_emulator(
         };
 
         let mut debug_log = String::new();
+        let mut smc_info_hook = move |smc_info: &mut tycho_executor::phase::ComputePhaseSmcInfo| {
+            smc_info.base.base.prev_blocks_info = prev_blocks_info.take();
+            Ok(())
+        };
         let mut inspector = tycho_executor::ExecutorInspector {
             debug: debug_enabled.then_some(&mut debug_log),
+            modify_smc_info: Some(&mut smc_info_hook),
             ..Default::default()
         };
 
@@ -267,20 +276,7 @@ pub fn run_get_method(params: &str, stack: &str, config: &str) -> js_sys::JsStri
         let config = tvm_emulator::ParsedConfig::try_from_root(config)
             .context("Failed to deserialize config")?;
 
-        let prev_blocks = if let Some(prev_blocks) = params.prev_blocks_info {
-            let info_value = Stack::load_stack_value_from_cell(prev_blocks.as_ref())
-                .context("Failed to deserialize previous blocks tuple")?;
-
-            if info_value.is_null() {
-                None
-            } else if let Ok(tuple) = info_value.into_tuple() {
-                Some(tuple)
-            } else {
-                anyhow::bail!("Failed to set previous blocks tuple: not a tuple");
-            }
-        } else {
-            None
-        };
+        let prev_blocks = parse_prev_blocks_info(params.prev_blocks_info.as_ref())?;
 
         let mut emulator = TvmEmulator::new(params.code, params.data, params.verbosity);
 
@@ -362,4 +358,23 @@ fn emulator_libs_to_simple(libs_root: Cell) -> Result<Dict<HashBytes, SimpleLib>
     }
 
     Dict::try_from_sorted_slice(&items).context("Failed to repack libraries dict")
+}
+
+fn parse_prev_blocks_info(
+    prev_blocks_info: Option<&Cell>,
+) -> Result<Option<tycho_vm::SafeRc<tycho_vm::Tuple>>> {
+    Ok(if let Some(prev_blocks) = prev_blocks_info {
+        let info_value = Stack::load_stack_value_from_cell(prev_blocks.as_ref())
+            .context("Failed to deserialize previous blocks tuple")?;
+
+        if info_value.is_null() {
+            None
+        } else if let Ok(tuple) = info_value.into_tuple() {
+            Some(tuple)
+        } else {
+            anyhow::bail!("Failed to set previous blocks tuple: not a tuple");
+        }
+    } else {
+        None
+    })
 }
