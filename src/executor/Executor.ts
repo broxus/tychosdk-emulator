@@ -1,4 +1,5 @@
 import type {
+  BlockId,
   ExecutorEmulationResult,
   ExecutorGetMethodArgs,
   ExecutorGetMethodResult,
@@ -6,8 +7,9 @@ import type {
   ExecutorRunTransactionArgs,
   ExecutorVerbosity,
   IExecutor,
+  PrevBlocksInfo,
 } from "@ton/sandbox";
-import { Cell, serializeTuple } from "@ton/core";
+import { Cell, serializeTuple, TupleItem } from "@ton/core";
 
 import {
   defaultConfig,
@@ -115,6 +117,14 @@ export class TychoExecutor implements IExecutor {
       for (const [k, v] of Object.entries(args.extraCurrency)) {
         params.extra_currencies[k] = v.toString();
       }
+    }
+
+    if (args.prevBlocksInfo !== undefined) {
+      params.prev_blocks_info = serializeTupleAsStackEntry(
+        prevBlocksInfoToTuple(args.prevBlocksInfo)
+      )
+        .toBoc()
+        .toString("base64");
     }
 
     let stack = serializeTuple(args.stack);
@@ -259,5 +269,54 @@ function runCommonArgsToInternalParams(
     full_body_in_bounced: executorParams.fullBodyInBounced,
     strict_extra_currency: executorParams.strictExtraCurrency,
     authority_marks_enabled: executorParams.authorityMarks,
+    prev_blocks_info:
+      args.prevBlocksInfo !== undefined
+        ? serializeTupleAsStackEntry(prevBlocksInfoToTuple(args.prevBlocksInfo))
+            .toBoc()
+            .toString("base64")
+        : undefined,
   };
+}
+
+function prevBlocksInfoToTuple(prevBlocksInfo: PrevBlocksInfo): TupleItem[] {
+  const r: TupleItem[] = [
+    {
+      type: "tuple",
+      items: prevBlocksInfo.lastMcBlocks.map((bid) => ({
+        type: "tuple",
+        items: blockIdToTuple(bid),
+      })),
+    },
+    { type: "tuple", items: blockIdToTuple(prevBlocksInfo.prevKeyBlock) },
+  ];
+
+  if (prevBlocksInfo.lastMcBlocks100) {
+    r.push({
+      type: "tuple",
+      items: prevBlocksInfo.lastMcBlocks100.map((bid) => ({
+        type: "tuple",
+        items: blockIdToTuple(bid),
+      })),
+    });
+  }
+
+  return r;
+}
+
+function blockIdToTuple(blockId: BlockId): TupleItem[] {
+  return [
+    { type: "int", value: BigInt(blockId.workchain) },
+    { type: "int", value: blockId.shard },
+    { type: "int", value: BigInt(blockId.seqno) },
+    { type: "int", value: BigInt("0x" + blockId.rootHash.toString("hex")) },
+    { type: "int", value: BigInt("0x" + blockId.fileHash.toString("hex")) },
+  ];
+}
+
+function serializeTupleAsStackEntry(tuple: TupleItem[]): Cell {
+  const c = serializeTuple([{ type: "tuple", items: tuple }]);
+  const s = c.beginParse();
+  s.skip(24);
+  s.loadRef();
+  return s.asCell();
 }
