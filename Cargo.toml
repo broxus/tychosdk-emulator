@@ -8,3 +8,7 @@ panic = "abort"
 incremental = false
 codegen-units = 1
 opt-level = 3
+
+[patch.crates-io]
+tycho-executor = { git = "https://github.com/broxus/tycho-vm.git", rev = "76f7250b8ffddacc1bcbb795dd1c8a52f13b411e" }
+tycho-vm = { git = "https://github.com/broxus/tycho-vm.git", rev = "76f7250b8ffddacc1bcbb795dd1c8a52f13b411e" }

@@ -670,8 +670,14 @@ impl TxEmulatorExt {
             .context("Failed to unpack storage prices")?;
 
         let mut debug_log = String::new();
+        let mut prev_blocks_info = self.prev_blocks_info.clone();
+        let mut smc_info_hook = move |smc_info: &mut tycho_executor::phase::ComputePhaseSmcInfo| {
+            smc_info.base.base.prev_blocks_info = prev_blocks_info.take();
+            Ok(())
+        };
         let mut inspector = tycho_executor::ExecutorInspector {
             debug: debug_enabled.then_some(&mut debug_log),
+            modify_smc_info: Some(&mut smc_info_hook),
             ..Default::default()
         };
 
