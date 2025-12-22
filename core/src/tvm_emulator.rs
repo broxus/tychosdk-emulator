@@ -90,7 +90,12 @@ impl TvmEmulator {
             .push(SafeRc::new_dyn_value(BigInt::from(method_id)));
 
         // Prepare VM state
-        let signature_with_id = self.args.config.as_ref().and_then(|c| c.signature_with_id);
+        let (enable_signature_domains, signature_with_id) = self
+            .args
+            .config
+            .as_ref()
+            .map(|c| (c.enable_signature_domains, c.signature_with_id))
+            .unwrap_or_default();
 
         let mut b = VmState::builder()
             .with_raw_stack(SafeRc::new(stack))
@@ -101,6 +106,7 @@ impl TvmEmulator {
             .with_gas(self.args.gas_params.unwrap_or_else(GasParams::getter))
             .with_init_selector(false)
             .with_modifiers(BehaviourModifiers {
+                enable_signature_domains,
                 signature_with_id,
                 chksig_always_succeed: self.args.ignore_chksig,
                 log_mask: make_vm_log_mask(self.args.verbosity, false),
@@ -341,6 +347,7 @@ pub struct ParsedConfig {
     pub params: BlockchainConfigParams,
     // TODO: Replace with VM version.
     pub version: u32,
+    pub enable_signature_domains: bool,
     pub signature_with_id: Option<i32>,
 }
 
@@ -356,9 +363,11 @@ impl ParsedConfig {
             .get_global_version()
             .context("Failed to get global version")?;
 
-        let signature_with_id = if global
-            .capabilities
-            .contains(GlobalCapability::CapSignatureWithId)
+        let capabilities = global.capabilities;
+        let enable_signature_domains = capabilities.contains(GlobalCapability::CapSignatureDomain);
+
+        let signature_with_id = if enable_signature_domains
+            || capabilities.contains(GlobalCapability::CapSignatureWithId)
         {
             params
                 .get_global_id()
@@ -371,6 +380,7 @@ impl ParsedConfig {
         Ok(Self {
             params,
             version: global.version,
+            enable_signature_domains,
             signature_with_id,
         })
     }

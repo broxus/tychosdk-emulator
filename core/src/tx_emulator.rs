@@ -35,10 +35,11 @@ impl TxEmulator {
         )
         .context("Failed to unpack config params")?;
 
-        let signature_with_id = if config
-            .global
-            .capabilities
-            .contains(GlobalCapability::CapSignatureWithId)
+        let capabilities = config.global.capabilities;
+        let enable_signature_domains = capabilities.contains(GlobalCapability::CapSignatureDomain);
+
+        let signature_with_id = if enable_signature_domains
+            || capabilities.contains(GlobalCapability::CapSignatureWithId)
         {
             params
                 .get_global_id()
@@ -55,6 +56,7 @@ impl TxEmulator {
             vm_modifiers: tycho_vm::BehaviourModifiers {
                 stop_on_accept: false,
                 chksig_always_succeed: false,
+                enable_signature_domains,
                 signature_with_id,
                 log_mask: make_vm_log_mask(verbosity, true),
             },

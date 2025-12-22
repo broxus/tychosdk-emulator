@@ -4,7 +4,12 @@ import {
   keyPairFromSeed,
   sign,
 } from "@ton/crypto";
-import { cryptoWithSignatureId, setSignatureId } from "./sign";
+import {
+  cryptoWithSignatureId,
+  setSignatureId,
+  cryptoWithSignatureDomain,
+  setSignatureDomain,
+} from "./sign";
 
 describe("setSignWithGlobalId", () => {
   const data = Buffer.from("Hello wordl!");
@@ -16,6 +21,8 @@ describe("setSignWithGlobalId", () => {
     keypair = keyPairFromSeed(seed);
     targetSignature = sign(data, keypair.secretKey);
   });
+
+  // === Signature id (predecessor of signature domains implementation) ===
 
   it("should not break on empty globalId", () => {
     const crypto = cryptoWithSignatureId(undefined);
@@ -59,6 +66,67 @@ describe("setSignWithGlobalId", () => {
 
   it("should handle negative global ids", () => {
     const crypto = cryptoWithSignatureId(-6001);
+
+    const newSignature = crypto.sign(data, keypair.secretKey);
+    expect(newSignature.equals(targetSignature)).toBe(false);
+    expect(crypto.signVerify(data, newSignature, keypair.publicKey)).toBe(true);
+  });
+
+  // === Signature domain ===
+
+  it("should not break on empty signature domain", () => {
+    const crypto = cryptoWithSignatureDomain(undefined);
+
+    const newSignature = crypto.sign(data, keypair.secretKey);
+    expect(newSignature.equals(targetSignature)).toBe(true);
+    expect(crypto.signVerify(data, newSignature, keypair.publicKey)).toBe(true);
+  });
+
+  it("should work when an L2 signature domain set", () => {
+    const oldCrypto = cryptoWithSignatureDomain(undefined);
+    const newCrypto = cryptoWithSignatureDomain({
+      type: "l2",
+      globalId: 123,
+    });
+
+    const newSignature = newCrypto.sign(data, keypair.secretKey);
+    expect(newSignature.equals(targetSignature)).toBe(false);
+    expect(newCrypto.signVerify(data, newSignature, keypair.publicKey)).toBe(
+      true
+    );
+    expect(newCrypto.signVerify(data, targetSignature, keypair.publicKey)).toBe(
+      false
+    );
+
+    expect(oldCrypto.signVerify(data, newSignature, keypair.publicKey)).toBe(
+      false
+    );
+    expect(oldCrypto.signVerify(data, targetSignature, keypair.publicKey)).toBe(
+      true
+    );
+  });
+
+  it("should properly update signature domain", () => {
+    const newCrypto = cryptoWithSignatureDomain({
+      type: "l2",
+      globalId: 345,
+    });
+    setSignatureDomain(newCrypto, {
+      type: "empty",
+    });
+
+    const newSignature = newCrypto.sign(data, keypair.secretKey);
+    expect(newSignature.equals(targetSignature)).toBe(true);
+    expect(newCrypto.signVerify(data, newSignature, keypair.publicKey)).toBe(
+      true
+    );
+  });
+
+  it("should handle negative global ids", () => {
+    const crypto = cryptoWithSignatureDomain({
+      type: "l2",
+      globalId: -6001,
+    });
 
     const newSignature = crypto.sign(data, keypair.secretKey);
     expect(newSignature.equals(targetSignature)).toBe(false);

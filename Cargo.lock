@@ -613,7 +613,7 @@ dependencies = [
 
 [[package]]
 name = "tycho-emulator"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "ahash",
  "anyhow",
@@ -635,7 +635,7 @@ dependencies = [
 [[package]]
 name = "tycho-executor"
 version = "0.3.0"
-source = "git+https://github.com/broxus/tycho-vm.git?rev=76f7250b8ffddacc1bcbb795dd1c8a52f13b411e#76f7250b8ffddacc1bcbb795dd1c8a52f13b411e"
+source = "git+https://github.com/broxus/tycho-vm.git?rev=01c8e061ae77dcb26d4f962a088644b6513541cd#01c8e061ae77dcb26d4f962a088644b6513541cd"
 dependencies = [
  "ahash",
  "anyhow",
@@ -648,8 +648,7 @@ dependencies = [
 [[package]]
 name = "tycho-types"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4f5833c3db328b9ec5544de8a2a7ff4a6d8d654d6f58d6ad5bf8b774dccf969"
+source = "git+https://github.com/broxus/tycho-types.git?rev=04023a04af95d446fc2c5ed29c233cac190a13d4#04023a04af95d446fc2c5ed29c233cac190a13d4"
 dependencies = [
  "ahash",
  "base64",
@@ -672,8 +671,7 @@ dependencies = [
 [[package]]
 name = "tycho-types-proc"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1ad05cf4ab89631f8c11d85c3aa80f781502440f75361d251f866e0d76ae9d31"
+source = "git+https://github.com/broxus/tycho-types.git?rev=04023a04af95d446fc2c5ed29c233cac190a13d4#04023a04af95d446fc2c5ed29c233cac190a13d4"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -683,7 +681,7 @@ dependencies = [
 [[package]]
 name = "tycho-vm"
 version = "0.3.0"
-source = "git+https://github.com/broxus/tycho-vm.git?rev=76f7250b8ffddacc1bcbb795dd1c8a52f13b411e#76f7250b8ffddacc1bcbb795dd1c8a52f13b411e"
+source = "git+https://github.com/broxus/tycho-vm.git?rev=01c8e061ae77dcb26d4f962a088644b6513541cd#01c8e061ae77dcb26d4f962a088644b6513541cd"
 dependencies = [
  "ahash",
  "anyhow",
@@ -705,7 +703,7 @@ dependencies = [
 [[package]]
 name = "tycho-vm-proc"
 version = "0.3.0"
-source = "git+https://github.com/broxus/tycho-vm.git?rev=76f7250b8ffddacc1bcbb795dd1c8a52f13b411e#76f7250b8ffddacc1bcbb795dd1c8a52f13b411e"
+source = "git+https://github.com/broxus/tycho-vm.git?rev=01c8e061ae77dcb26d4f962a088644b6513541cd#01c8e061ae77dcb26d4f962a088644b6513541cd"
 dependencies = [
  "darling",
  "proc-macro2",

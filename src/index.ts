@@ -8,4 +8,14 @@ export { TychoRemoteBlockchainStorage } from "./blockchain/BlockchainStorage";
 export { TychoExecutor } from "./executor/Executor";
 
 export { getGlobalId } from "./utils/globalId";
-export { cryptoWithSignatureId, setSignatureId } from "./utils/sign";
+export {
+  cryptoWithSignatureId,
+  setSignatureId,
+  SignatureDomain,
+  cryptoWithSignatureDomain,
+  setSignatureDomain,
+  signatureDomainPrefix,
+  SIGNATURE_DOMAIN_EMPTY_HASH,
+  TL_ID_SIGNATURE_DOMAIN_EMPTY,
+  TL_ID_SIGNATURE_DOMAIN_L2,
+} from "./utils/sign";
