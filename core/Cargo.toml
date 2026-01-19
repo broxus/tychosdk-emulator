@@ -3,7 +3,7 @@ name = "tycho-emulator"
 description = "A Tycho executor emulator."
 repository = "https://github.com/broxus/tycho-emulator"
 authors = ["Ivan Kalinin <i.kalinin@dexpa.io>"]
-version = "0.2.4"
+version = "0.2.5"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 
@@ -33,13 +33,13 @@ tracing = { version = "0.1", features = ["std"] }
 wasm-bindgen = { version = "0.2.100", optional = true }
 web-sys = { version = "0.3.77", features = ["Performance"], optional = true }
 
-tycho-types = { version = "0.3.0", default-features = false, features = [
+tycho-types = { version = "0.3.1", default-features = false, features = [
     "sync",
     "serde",
     "base64",
 ] }
-tycho-executor = { version = "0.3.0" }
-tycho-vm = { version = "0.3.0", features = ["tracing"] }
+tycho-executor = { version = "0.3.1" }
+tycho-vm = { version = "0.3.1", features = ["tracing"] }
 
 [build-dependencies]
 anyhow = "1.0"

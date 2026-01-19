@@ -613,7 +613,7 @@ dependencies = [
 
 [[package]]
 name = "tycho-emulator"
-version = "0.2.4"
+version = "0.2.5"
 dependencies = [
  "ahash",
  "anyhow",
@@ -634,8 +634,9 @@ dependencies = [
 
 [[package]]
 name = "tycho-executor"
-version = "0.3.0"
-source = "git+https://github.com/broxus/tycho-vm.git?rev=01c8e061ae77dcb26d4f962a088644b6513541cd#01c8e061ae77dcb26d4f962a088644b6513541cd"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "648dbb51e41afc89f6879dc7df6ca00cf14e4a5c5f8b0c5061abe2c0fa66bb99"
 dependencies = [
  "ahash",
  "anyhow",
@@ -647,8 +648,9 @@ dependencies = [
 
 [[package]]
 name = "tycho-types"
-version = "0.3.0"
-source = "git+https://github.com/broxus/tycho-types.git?rev=04023a04af95d446fc2c5ed29c233cac190a13d4#04023a04af95d446fc2c5ed29c233cac190a13d4"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c2ccb37e250becb5c4b827536644c777c247b41ac6c9ddd30902ff1db29818a7"
 dependencies = [
  "ahash",
  "base64",
@@ -671,7 +673,8 @@ dependencies = [
 [[package]]
 name = "tycho-types-proc"
 version = "0.3.0"
-source = "git+https://github.com/broxus/tycho-types.git?rev=04023a04af95d446fc2c5ed29c233cac190a13d4#04023a04af95d446fc2c5ed29c233cac190a13d4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ad05cf4ab89631f8c11d85c3aa80f781502440f75361d251f866e0d76ae9d31"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -680,8 +683,9 @@ dependencies = [
 
 [[package]]
 name = "tycho-vm"
-version = "0.3.0"
-source = "git+https://github.com/broxus/tycho-vm.git?rev=01c8e061ae77dcb26d4f962a088644b6513541cd#01c8e061ae77dcb26d4f962a088644b6513541cd"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "114a3cf7fe65097991d2b3597e266a2b00c674a42647d142fa89757f48171c3b"
 dependencies = [
  "ahash",
  "anyhow",
@@ -702,8 +706,9 @@ dependencies = [
 
 [[package]]
 name = "tycho-vm-proc"
-version = "0.3.0"
-source = "git+https://github.com/broxus/tycho-vm.git?rev=01c8e061ae77dcb26d4f962a088644b6513541cd#01c8e061ae77dcb26d4f962a088644b6513541cd"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "20f8134185f8c4e962dad667871e36ac7ccea9c566e59aa9fa94ac4be6e80b57"
 dependencies = [
  "darling",
  "proc-macro2",
