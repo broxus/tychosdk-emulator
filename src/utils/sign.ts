@@ -3,7 +3,7 @@ import * as tonCrypto from "@ton/crypto";
 const originalTonCrypto = { ...tonCrypto };
 
 export function cryptoWithSignatureId(
-  globalId: number | null | undefined
+  globalId: number | null | undefined,
 ): typeof tonCrypto {
   const result = { ...originalTonCrypto };
   setSignatureId(result, globalId);
@@ -12,7 +12,7 @@ export function cryptoWithSignatureId(
 
 export function setSignatureId(
   crypto: typeof tonCrypto,
-  globalId: number | null | undefined
+  globalId: number | null | undefined,
 ) {
   if (globalId != null) {
     let globalIdBytes = Buffer.alloc(4);
@@ -68,7 +68,7 @@ export const SIGNATURE_DOMAIN_EMPTY_HASH: Buffer = (() => {
 })();
 
 export function signatureDomainPrefix(
-  domain: SignatureDomain | Buffer
+  domain: SignatureDomain | Buffer,
 ): Buffer | null {
   if (Buffer.isBuffer(domain)) {
     if (domain.length !== 32) {
@@ -85,7 +85,7 @@ export function signatureDomainPrefix(
       case "l2": {
         const tl = Buffer.alloc(8);
         tl.writeInt32LE(TL_ID_SIGNATURE_DOMAIN_L2);
-        tl.writeInt32LE(domain.globalId);
+        tl.writeInt32LE(domain.globalId, 4);
         return originalTonCrypto.sha256_sync(tl);
       }
       default:
@@ -95,7 +95,7 @@ export function signatureDomainPrefix(
 }
 
 export function cryptoWithSignatureDomain(
-  domain: SignatureDomain | Buffer | null | undefined
+  domain: SignatureDomain | Buffer | null | undefined,
 ): typeof tonCrypto {
   const result = { ...originalTonCrypto };
   setSignatureDomain(result, domain);
@@ -104,7 +104,7 @@ export function cryptoWithSignatureDomain(
 
 export function setSignatureDomain(
   crypto: typeof tonCrypto,
-  domain: SignatureDomain | Buffer | null | undefined
+  domain: SignatureDomain | Buffer | null | undefined,
 ) {
   const prefix = domain != null ? signatureDomainPrefix(domain) : null;
 
