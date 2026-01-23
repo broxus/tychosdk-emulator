@@ -11,5 +11,6 @@ opt-level = 3
 
 [patch.crates-io]
 # patch here
-tycho-executor = { git = "https://github.com/broxus/tycho-vm.git", rev = "b5029f5cde3eb713f6bf5e588f1718cf096ad113" }
-tycho-vm = { git = "https://github.com/broxus/tycho-vm.git", rev = "b5029f5cde3eb713f6bf5e588f1718cf096ad113" }
+tycho-executor = { git = "https://github.com/broxus/tycho-vm.git", rev = "a7703f80abc2c229d4d49951f1f6e98579150d56" }
+tycho-types = { git = "https://github.com/broxus/tycho-types.git", rev = "2c18c65eb996d0dc04b1ede54aaa2ab31f230d48" }
+tycho-vm = { git = "https://github.com/broxus/tycho-vm.git", rev = "a7703f80abc2c229d4d49951f1f6e98579150d56" }

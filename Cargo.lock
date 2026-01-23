@@ -635,7 +635,7 @@ dependencies = [
 [[package]]
 name = "tycho-executor"
 version = "0.3.1"
-source = "git+https://github.com/broxus/tycho-vm.git?rev=b5029f5cde3eb713f6bf5e588f1718cf096ad113#b5029f5cde3eb713f6bf5e588f1718cf096ad113"
+source = "git+https://github.com/broxus/tycho-vm.git?rev=a7703f80abc2c229d4d49951f1f6e98579150d56#a7703f80abc2c229d4d49951f1f6e98579150d56"
 dependencies = [
  "ahash",
  "anyhow",
@@ -648,8 +648,7 @@ dependencies = [
 [[package]]
 name = "tycho-types"
 version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c2ccb37e250becb5c4b827536644c777c247b41ac6c9ddd30902ff1db29818a7"
+source = "git+https://github.com/broxus/tycho-types.git?rev=2c18c65eb996d0dc04b1ede54aaa2ab31f230d48#2c18c65eb996d0dc04b1ede54aaa2ab31f230d48"
 dependencies = [
  "ahash",
  "base64",
@@ -672,8 +671,7 @@ dependencies = [
 [[package]]
 name = "tycho-types-proc"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1ad05cf4ab89631f8c11d85c3aa80f781502440f75361d251f866e0d76ae9d31"
+source = "git+https://github.com/broxus/tycho-types.git?rev=2c18c65eb996d0dc04b1ede54aaa2ab31f230d48#2c18c65eb996d0dc04b1ede54aaa2ab31f230d48"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -683,7 +681,7 @@ dependencies = [
 [[package]]
 name = "tycho-vm"
 version = "0.3.1"
-source = "git+https://github.com/broxus/tycho-vm.git?rev=b5029f5cde3eb713f6bf5e588f1718cf096ad113#b5029f5cde3eb713f6bf5e588f1718cf096ad113"
+source = "git+https://github.com/broxus/tycho-vm.git?rev=a7703f80abc2c229d4d49951f1f6e98579150d56#a7703f80abc2c229d4d49951f1f6e98579150d56"
 dependencies = [
  "ahash",
  "anyhow",
@@ -705,7 +703,7 @@ dependencies = [
 [[package]]
 name = "tycho-vm-proc"
 version = "0.3.1"
-source = "git+https://github.com/broxus/tycho-vm.git?rev=b5029f5cde3eb713f6bf5e588f1718cf096ad113#b5029f5cde3eb713f6bf5e588f1718cf096ad113"
+source = "git+https://github.com/broxus/tycho-vm.git?rev=a7703f80abc2c229d4d49951f1f6e98579150d56#a7703f80abc2c229d4d49951f1f6e98579150d56"
 dependencies = [
  "darling",
  "proc-macro2",

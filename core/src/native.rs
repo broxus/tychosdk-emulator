@@ -610,7 +610,7 @@ impl TxEmulatorExt {
             vm_modifiers: self.base.vm_modifiers,
             disable_delete_frozen_accounts: true,
             charge_action_fees_on_fail: true,
-            full_body_in_bounced: true,
+            full_body_in_bounced: false,
             strict_extra_currency: true,
             authority_marks_enabled: true,
             // Will be overwritten

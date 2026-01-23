@@ -309,7 +309,7 @@ impl Args {
                 src: StdAddr::new(-1, HashBytes::ZERO).into(),
                 dst: self.address().into(),
                 value: CurrencyCollection::new(amount as _),
-                ihr_fee: Tokens::ZERO,
+                extra_flags: Default::default(),
                 fwd_fee: Tokens::ZERO,
                 created_lt: 0,
                 created_at: 0,
