@@ -1,7 +1,26 @@
 import axios from "axios";
 import { z } from "zod";
-import { Address, AccountState, Cell, loadAccount } from "@ton/core";
+import {
+  Address,
+  AccountState,
+  Cell,
+  loadAccount,
+  Dictionary,
+} from "@ton/core";
 import { Blockchain, BlockchainStorage, SmartContract } from "@ton/sandbox";
+
+export type TychoRemoteConfig = {
+  /// Config account address (always in masterchain).
+  address: Address;
+  /// Network global ID.
+  globalId: number;
+  /// Seqno of the keyblock with this config.
+  seqno: number;
+  /// Config params root cell.
+  root: Cell;
+  /// Config params as dictionary.
+  params: Dictionary<number, Cell>;
+};
 
 export class TychoRemoteBlockchainStorage implements BlockchainStorage {
   private contracts: Map<string, SmartContract> = new Map();
@@ -9,6 +28,29 @@ export class TychoRemoteBlockchainStorage implements BlockchainStorage {
 
   constructor(params: { url: string }) {
     this.client = new JrpcClient(params.url);
+  }
+
+  /// Fetches the latest remote config.
+  async getRemoteConfig(): Promise<TychoRemoteConfig> {
+    const res = await this.client.getConfig();
+    const config = Cell.fromBase64(res.config);
+    const cs = config.asSlice();
+
+    const address = new Address(-1, cs.loadBuffer(32));
+    const root = cs.loadRef();
+    const params = Dictionary.loadDirect(
+      Dictionary.Keys.Int(32),
+      Dictionary.Values.Cell(),
+      root,
+    );
+
+    return {
+      address,
+      globalId: res.globalId,
+      seqno: res.seqno,
+      root,
+      params,
+    };
   }
 
   async getContract(blockchain: Blockchain, address: Address) {
@@ -21,7 +63,7 @@ export class TychoRemoteBlockchainStorage implements BlockchainStorage {
       existing = new SmartContract(
         {
           lastTransactionHash: BigInt(
-            "0x" + (account.lastTransaction?.hash?.toString("hex") ?? "0")
+            "0x" + (account.lastTransaction?.hash?.toString("hex") ?? "0"),
           ),
           lastTransactionLt: lt,
           account: {
@@ -42,7 +84,7 @@ export class TychoRemoteBlockchainStorage implements BlockchainStorage {
             },
           },
         },
-        blockchain
+        blockchain,
       );
 
       this.contracts.set(address.toString(), existing);
@@ -62,6 +104,35 @@ export class TychoRemoteBlockchainStorage implements BlockchainStorage {
 
 class JrpcClient {
   constructor(private url: string) {}
+
+  async getConfig() {
+    const res = await axios.request({
+      url: this.url,
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "getBlockchainConfig",
+        params: {},
+      }),
+    });
+
+    if (res.status != 200) {
+      console.error(res.data);
+      throw new Error(res.statusText);
+    }
+
+    const data = responseSchema.parse(res.data);
+    if (data.result == null) {
+      console.error(data.error);
+      throw new Error("Bad response");
+    }
+
+    return blockchainConfigSchema.parse(data.result);
+  }
 
   async getAccount(address: Address): Promise<{
     state: AccountState;
@@ -148,3 +219,9 @@ const accountSchema = z.union([
     timings: timingsSchema,
   }),
 ]);
+
+const blockchainConfigSchema = z.object({
+  globalId: z.number(),
+  seqno: z.number(),
+  config: z.string(),
+});

@@ -3,7 +3,7 @@ name = "tycho-emulator"
 description = "A Tycho executor emulator."
 repository = "https://github.com/broxus/tycho-emulator"
 authors = ["Ivan Kalinin <i.kalinin@dexpa.io>"]
-version = "0.2.5"
+version = "0.2.6"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 
