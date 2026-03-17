@@ -2,6 +2,7 @@
 /target
 /.vscode
 /.idea
+/.zed
 /.cache
 
 /**/pkg

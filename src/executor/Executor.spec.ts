@@ -15,6 +15,17 @@ import { defaultConfig } from "../config/defaultConfig";
 import { TychoExecutor } from "./Executor";
 import { createShardAccount } from "@ton/sandbox";
 
+// NEWC
+// 2 PUSHINT
+// 8 STUR
+// x{96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7} STSLICECONST
+// 1 PUSHINT
+// ENDXC
+// XLOAD
+// ACCEPT
+const CODE_GET_LIBRARY_AND_ACCEPT =
+  "te6ccgEBAQEAMwAAYshyzwsHjQglqKW0iTyhcZ77pPDD4owkVfw2qNdxbh+QQt4YwoJz8eDPFnHPI9c6+AA=";
+
 describe("executor", () => {
   let executor: TychoExecutor;
   beforeAll(async () => {
@@ -23,7 +34,7 @@ describe("executor", () => {
 
   it("should run get method", async () => {
     let code = Cell.fromBase64(
-      "te6ccsEBAgEAEQANEQEU/wD0pBP0vPLICwEABNOgu3u26g=="
+      "te6ccsEBAgEAEQANEQEU/wD0pBP0vPLICwEABNOgu3u26g==",
     );
     let data = beginCell().endCell();
 
@@ -58,7 +69,7 @@ describe("executor", () => {
             account: null,
             lastTransactionHash: 0n,
             lastTransactionLt: 0n,
-          })
+          }),
         )
         .endCell()
         .toBoc()
@@ -80,7 +91,7 @@ describe("executor", () => {
               createdLt: 0n,
             },
             body: new Cell(),
-          })
+          }),
         )
         .endCell(),
       now: 0,
@@ -95,11 +106,11 @@ describe("executor", () => {
   it("can find library for get method", async () => {
     const libsDict = Dictionary.empty(
       Dictionary.Keys.Buffer(32),
-      Dictionary.Values.Cell()
+      Dictionary.Values.Cell(),
     );
-    libsDict.set(Buffer.alloc(32, 0), new Cell());
+    libsDict.set(Cell.EMPTY.hash(), Cell.EMPTY);
 
-    let code = Cell.fromBase64("te6ccgEBAQEAEwAAIshyzwsHgQEAz0BxzyPXOvgA");
+    let code = Cell.fromBase64(CODE_GET_LIBRARY_AND_ACCEPT);
     let data = beginCell().endCell();
 
     let res = await executor.runGetMethod({
@@ -130,13 +141,13 @@ describe("executor", () => {
   it("can find library for executor", async () => {
     const libsDict = Dictionary.empty(
       Dictionary.Keys.Buffer(32),
-      Dictionary.Values.Cell()
+      Dictionary.Values.Cell(),
     );
-    libsDict.set(Buffer.alloc(32, 0), new Cell());
+    libsDict.set(Cell.EMPTY.hash(), Cell.EMPTY);
 
     const account = createShardAccount({
       address: new Address(0, Buffer.alloc(32)),
-      code: Cell.fromBase64("te6ccgEBAQEAEwAAIshyzwsHgQEAz0BxzyPXOvgA"),
+      code: Cell.fromBase64(CODE_GET_LIBRARY_AND_ACCEPT),
       data: new Cell(),
       balance: toNano("1"),
     });
@@ -167,7 +178,7 @@ describe("executor", () => {
               createdLt: 0n,
             },
             body: new Cell(),
-          })
+          }),
         )
         .endCell(),
       now: 0,
@@ -180,14 +191,14 @@ describe("executor", () => {
     expect(res.result.success).toBe(true);
     if (res.result.success) {
       const tx = loadTransaction(
-        Cell.fromBase64(res.result.transaction).asSlice()
+        Cell.fromBase64(res.result.transaction).asSlice(),
       );
 
       expect(tx.description.type).toBe("generic");
       if (tx.description.type == "generic") {
         expect(tx.description.computePhase.type).toBe("vm");
         expect(
-          (tx.description.computePhase as TransactionComputeVm).exitCode
+          (tx.description.computePhase as TransactionComputeVm).exitCode,
         ).toBe(0);
       }
     }
