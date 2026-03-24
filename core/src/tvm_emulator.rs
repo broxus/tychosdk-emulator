@@ -278,7 +278,12 @@ impl Args {
         }
 
         let b = b.require_ton_v11().with_unpacked_in_msg(None);
-        Box::new(b)
+
+        // Overwrite VM version if the latest smc info is used.
+        Box::new(CustomSmcInfo {
+            version: VmVersion::Ton(12),
+            c7: b.build_c7(),
+        })
     }
 
     fn build_stack(&self, message_amount: u64, message_body: Cell, selector: i32) -> Stack {
