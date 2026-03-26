@@ -33,13 +33,13 @@ tracing = { version = "0.1", features = ["std"] }
 wasm-bindgen = { version = "0.2.100", optional = true }
 web-sys = { version = "0.3.77", features = ["Performance"], optional = true }
 
-tycho-types = { version = "0.3.2", default-features = false, features = [
+tycho-types = { version = "0.3.3", default-features = false, features = [
     "sync",
     "serde",
     "base64",
 ] }
-tycho-executor = { version = "0.3.3" }
-tycho-vm = { version = "0.3.3", features = ["tracing"] }
+tycho-executor = { version = "0.3.4" }
+tycho-vm = { version = "0.3.4", features = ["tracing"] }
 
 [build-dependencies]
 anyhow = "1.0"
