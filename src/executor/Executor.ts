@@ -87,7 +87,7 @@ export class TychoExecutor implements IExecutor {
 
   constructor(
     private module: EmulatorWasm,
-    private executorParams: TychoExecutorParams
+    private executorParams: TychoExecutorParams,
   ) {}
 
   static async create(params: TychoExecutorParams = {}) {
@@ -96,7 +96,7 @@ export class TychoExecutor implements IExecutor {
   }
 
   async runGetMethod(
-    args: ExecutorGetMethodArgs
+    args: ExecutorGetMethodArgs,
   ): Promise<ExecutorGetMethodResult> {
     const params: RunGetMethodParams = {
       code: args.code.toBoc().toString("base64"),
@@ -121,7 +121,7 @@ export class TychoExecutor implements IExecutor {
 
     if (args.prevBlocksInfo !== undefined) {
       params.prev_blocks_info = serializeTupleAsStackEntry(
-        prevBlocksInfoToTuple(args.prevBlocksInfo)
+        prevBlocksInfoToTuple(args.prevBlocksInfo),
       )
         .toBoc()
         .toString("base64");
@@ -133,8 +133,8 @@ export class TychoExecutor implements IExecutor {
       this.module.run_get_method(
         JSON.stringify(params),
         stack.toBoc().toString("base64"),
-        args.config
-      )
+        args.config,
+      ),
     );
 
     if (res.ok) {
@@ -150,7 +150,7 @@ export class TychoExecutor implements IExecutor {
   }
 
   async runTickTock(
-    args: ExecutorRunTickTockArgs
+    args: ExecutorRunTickTockArgs,
   ): Promise<ExecutorEmulationResult> {
     const params: EmulatorParams = {
       ...runCommonArgsToInternalParams(args, this.executorParams),
@@ -163,12 +163,12 @@ export class TychoExecutor implements IExecutor {
       args.libs?.toBoc().toString("base64"),
       args.shardAccount,
       null,
-      JSON.stringify(params)
+      JSON.stringify(params),
     );
   }
 
   async runTransaction(
-    args: ExecutorRunTransactionArgs
+    args: ExecutorRunTransactionArgs,
   ): Promise<ExecutorEmulationResult> {
     const params = runCommonArgsToInternalParams(args, this.executorParams);
 
@@ -177,7 +177,7 @@ export class TychoExecutor implements IExecutor {
       args.libs?.toBoc().toString("base64"),
       args.shardAccount,
       args.message.toBoc().toString("base64"),
-      JSON.stringify(params)
+      JSON.stringify(params),
     );
   }
 
@@ -194,7 +194,7 @@ export class TychoExecutor implements IExecutor {
     ...args: Parameters<typeof emulatorWasm.emulate_with_emulator>
   ): ExecutorEmulationResult {
     const res: OkResponse<EmulatorResponse> | ErrResponse = JSON.parse(
-      this.module.emulate_with_emulator.apply(this, args)
+      this.module.emulate_with_emulator.apply(this, args),
     );
 
     if (!res.ok) {
@@ -256,7 +256,7 @@ export class TychoExecutor implements IExecutor {
 
 function runCommonArgsToInternalParams(
   args: ExecutorRunTransactionArgs | ExecutorRunTickTockArgs,
-  executorParams: TychoExecutorParams
+  executorParams: TychoExecutorParams,
 ): EmulatorParams {
   return {
     unixtime: args.now,
